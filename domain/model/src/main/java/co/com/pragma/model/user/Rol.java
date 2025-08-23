@@ -8,7 +8,7 @@ import lombok.*;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 public class Rol {
-    private String rolId;
+    private Integer rolId;
     private String name;
     private String description;
 }
