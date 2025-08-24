@@ -25,7 +25,7 @@ import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class UserUseCaseImplTest {
+class UserUseCaseTest {
 
     @Mock
     private UserRepository userRepository;
@@ -40,7 +40,7 @@ class UserUseCaseImplTest {
     private TransactionalPort operator;
 
     @InjectMocks
-    private UserUseCaseImpl userUseCase;
+    private UserUseCase userUseCase;
 
     private User.UserBuilder validUser;
     private Role clientRole;

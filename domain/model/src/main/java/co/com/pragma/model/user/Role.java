@@ -2,6 +2,8 @@ package co.com.pragma.model.user;
 
 import lombok.*;
 
+import java.util.StringJoiner;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -14,10 +16,10 @@ public class Role {
 
     @Override
     public String toString() {
-        return "Role{" +
-                "rolId=" + rolId +
-                ", name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                '}';
+        StringJoiner joiner = new java.util.StringJoiner(", ", "Role{", "}");
+        joiner.add("rolId=" + rolId);
+        joiner.add("name=" + name);
+        joiner.add("description=" + description);
+        return joiner.toString();
     }
 }

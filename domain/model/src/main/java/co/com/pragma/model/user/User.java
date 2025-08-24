@@ -1,4 +1,5 @@
 package co.com.pragma.model.user;
+
 import lombok.Builder;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -8,6 +9,7 @@ import lombok.Setter;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.util.StringJoiner;
 
 @Getter
 @Setter
@@ -26,7 +28,7 @@ public class User {
     private String address;
     private LocalDate birthDate;
 
-    public void trimFields(){
+    public void trimFields() {
         this.name = this.name != null ? this.name.trim() : null;
         this.lastName = this.lastName != null ? this.lastName.trim() : null;
         this.email = this.email != null ? this.email.trim() : null;
@@ -40,17 +42,19 @@ public class User {
 
     @Override
     public String toString() {
-        return "User{" +
-                "userId=" + userId +
-                ", name='" + name + '\'' +
-                ", lastName='" + lastName + '\'' +
-                ", email='" + email + '\'' +
-                ", idNumber='" + idNumber + '\'' +
-                ", role=" + role.toString() +
-                ", baseSalary=" + baseSalary +
-                ", phone='" + phone + '\'' +
-                ", address='" + address + '\'' +
-                ", birthDate=" + birthDate +
-                '}';
+        StringJoiner joiner = new java.util.StringJoiner(", ", "User{", "}");
+        joiner.add("userId=" + this.userId);
+        joiner.add("name='" + this.name + "'");
+        joiner.add("lastName='" + this.lastName + "'");
+        joiner.add("email='" + this.email + "'");
+        joiner.add("role=");
+        joiner.add(this.role != null ? this.role.toString() : "null");
+        joiner.add("idNumber='***'");
+        joiner.add("baseSalary='***'");
+        joiner.add("phone='***'");
+        joiner.add("address='***'");
+        joiner.add("birthDate='***'");
+
+        return joiner.toString();
     }
 }
