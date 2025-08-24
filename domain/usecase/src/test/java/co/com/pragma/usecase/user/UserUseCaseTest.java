@@ -1,6 +1,6 @@
 package co.com.pragma.usecase.user;
 
-import co.com.pragma.model.user.SalaryUnboundException;
+import co.com.pragma.model.user.exceptions.SalaryUnboundException;
 import co.com.pragma.model.user.User;
 import co.com.pragma.model.user.exceptions.EmailFormatException;
 import co.com.pragma.model.user.exceptions.EmailTakenException;

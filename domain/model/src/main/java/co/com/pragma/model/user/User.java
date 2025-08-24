@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 
 @Getter
@@ -33,7 +34,7 @@ public class User {
         this.phone = this.phone != null ? this.phone.trim() : null;
         this.address = this.address != null ? this.address.trim() : null;
         if (this.baseSalary != null) {
-            this.baseSalary = this.baseSalary.setScale(2, BigDecimal.ROUND_HALF_UP);
+            this.baseSalary = this.baseSalary.setScale(2, RoundingMode.HALF_UP);
         }
     }
 }

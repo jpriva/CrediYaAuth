@@ -1,6 +1,5 @@
 package co.com.pragma.usecase.user;
 
-import co.com.pragma.model.user.SalaryUnboundException;
 import co.com.pragma.model.user.User;
 import co.com.pragma.model.user.exceptions.*;
 import co.com.pragma.model.user.gateways.UserRepository;
