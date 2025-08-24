@@ -1,6 +1,8 @@
 package co.com.pragma.usecase.user;
 
-import lombok.RequiredArgsConstructor;
-@RequiredArgsConstructor
-public class UserUseCase {
+import co.com.pragma.model.user.User;
+import reactor.core.publisher.Mono;
+
+public interface UserUseCase {
+    Mono<User> save(User user);
 }
