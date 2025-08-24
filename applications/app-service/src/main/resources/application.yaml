@@ -1,5 +1,6 @@
 server:
   port: 8081
+
 spring:
   application:
     name: "AUTENTICACION"
@@ -13,6 +14,7 @@ spring:
     password: "pass12345"
     locations: "classpath:db/migration"
     enabled: true
+
 adapters:
   r2dbc:
     host: "localhost"
@@ -20,6 +22,7 @@ adapters:
     database: "auth_db"
     username: "jpriva"
     password: "pass12345"
+
 management:
   endpoints:
     web:
@@ -29,5 +32,18 @@ management:
     health:
       probes:
         enabled: true
+  server:
+    port: 9090
+
 cors:
-  allowed-origins: "http://localhost:4200,http://localhost:8080"
+  allowed-origins: "http://localhost:4200,http://localhost:8081"
+
+springdoc:
+  api-docs:
+    info:
+      title: Crediya Auth API Microservice
+      version: "1.0.0"
+      description: API for Crediya Auth Microservice
+  swagger-ui:
+    path: /swagger-ui.html
+

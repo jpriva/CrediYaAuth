@@ -12,6 +12,7 @@ dependencies {
     testImplementation 'com.tngtech.archunit:archunit:1.4.1'
     testImplementation 'com.fasterxml.jackson.core:jackson-databind'
     implementation 'org.springframework:spring-tx'
+    implementation 'org.springdoc:springdoc-openapi-starter-webflux-ui:2.8.11'
 }
 
 tasks.register('explodedJar', Copy) {
