@@ -7,7 +7,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder(toBuilder = true)
-public class Rol {
+public class Role {
     private Integer rolId;
     private String name;
     private String description;

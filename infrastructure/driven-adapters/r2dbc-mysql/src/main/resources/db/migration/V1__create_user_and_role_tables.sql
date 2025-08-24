@@ -2,7 +2,7 @@
 
 CREATE TABLE Rol (
   UniqueID INT NOT NULL AUTO_INCREMENT,
-  nombre VARCHAR(50) NOT NULL,
+  nombre VARCHAR(50) NOT NULL UNIQUE,
   descripcion VARCHAR(255) NULL,
   PRIMARY KEY (UniqueID)
 );

@@ -1,0 +1,165 @@
+package co.com.pragma.r2dbc;
+
+import co.com.pragma.model.user.Role;
+import co.com.pragma.model.user.User;
+import co.com.pragma.model.user.exceptions.RoleNotFoundException;
+import co.com.pragma.r2dbc.entity.RoleEntity;
+import co.com.pragma.r2dbc.entity.UserEntity;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.FilterType;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.r2dbc.config.AbstractR2dbcConfiguration;
+import org.springframework.data.r2dbc.repository.config.EnableR2dbcRepositories;
+import org.springframework.data.domain.Example;
+import org.springframework.lang.NonNull;
+import org.springframework.r2dbc.connection.init.ConnectionFactoryInitializer;
+import org.springframework.r2dbc.connection.init.ResourceDatabasePopulator;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
+
+import java.math.BigDecimal;
+
+import io.r2dbc.spi.ConnectionFactories;
+import io.r2dbc.spi.ConnectionFactory;
+
+@ExtendWith(SpringExtension.class)
+@ContextConfiguration(classes = UserRepositoryImplIntegrationTest.TestConfig.class)
+class UserRepositoryImplIntegrationTest {
+
+    @Configuration
+    @EnableR2dbcRepositories(
+            basePackages = "co.com.pragma.r2dbc",
+            includeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = {
+                    UserEntityRepository.class,
+                    RoleEntityRepository.class
+            })
+    )
+    static class TestConfig extends AbstractR2dbcConfiguration {
+
+        @Override
+        @Bean
+        @NonNull
+        public ConnectionFactory connectionFactory() {
+            return ConnectionFactories.get("r2dbc:h2:mem:///testdb;DB_CLOSE_DELAY=-1;");
+        }
+
+        @Bean
+        ConnectionFactoryInitializer initializer(ConnectionFactory connectionFactory) {
+            ConnectionFactoryInitializer initializer = new ConnectionFactoryInitializer();
+            initializer.setConnectionFactory(connectionFactory);
+            initializer.setDatabasePopulator(new ResourceDatabasePopulator(new ClassPathResource("schema.sql")));
+            return initializer;
+        }
+
+        @Bean
+        public UserRepositoryImpl userRepository(UserEntityRepository userEntityRepository, RoleEntityRepository roleEntityRepository) {
+            return new UserRepositoryImpl(userEntityRepository, roleEntityRepository);
+        }
+    }
+
+    @Autowired
+    private UserRepositoryImpl userRepository;
+
+    @Autowired
+    private UserEntityRepository userEntityRepository;
+
+    @Autowired
+    private RoleEntityRepository roleEntityRepository;
+
+    private RoleEntity savedRoleEntity;
+    private Role savedRole;
+
+    @BeforeEach
+    void setUp() {
+        userEntityRepository.deleteAll().block();
+
+        savedRoleEntity = roleEntityRepository.findOne(Example.of(RoleEntity.builder().name("CLIENTE").build())).block();
+        savedRole = Role.builder().rolId(savedRoleEntity.getRolId()).name(savedRoleEntity.getName()).description(savedRoleEntity.getDescription()).build();
+    }
+
+    @Test
+    void save_shouldPersistAndReturnUser_whenSuccessful() {
+        User userToSave = User.builder()
+                .name("Jane")
+                .lastName("Doe")
+                .email("jane.doe@example.com")
+                .idNumber("987654321")
+                .role(savedRole)
+                .baseSalary(new BigDecimal("60000"))
+                .build();
+
+        Mono<User> result = userRepository.save(userToSave);
+
+        StepVerifier.create(result)
+                .assertNext(savedUser -> {
+                    assert savedUser.getUserId() != null;
+                    assert savedUser.getName().equals(userToSave.getName());
+                    assert savedUser.getRole() != null;
+                    assert savedUser.getRole().getRolId().equals(savedRoleEntity.getRolId());
+                    assert savedUser.getRole().getName().equals(savedRoleEntity.getName()); // Verificamos que el nombre también se mapee
+                })
+                .verifyComplete();
+
+        Mono<Long> countOperation = userEntityRepository.count(Example.of(UserEntity.builder().email("jane.doe@example.com").build()));
+
+        StepVerifier.create(countOperation).expectNext(1L).verifyComplete();
+    }
+
+    @Test
+    void save_shouldReturnError_whenRoleIsNotFound() {
+        int nonExistentRoleId = 999;
+        User userToSave = User.builder()
+                .name("Jane")
+                .lastName("Doe")
+                .email("jane.doe@example.com")
+                .idNumber("987654321")
+                .role(Role.builder().rolId(nonExistentRoleId).build())
+                .baseSalary(new BigDecimal("60000"))
+                .build();
+
+        Mono<User> result = userRepository.save(userToSave);
+
+        StepVerifier.create(result)
+                .expectError(RoleNotFoundException.class)
+                .verify();
+    }
+
+    @Test
+    void exists_shouldReturnTrue_whenUserExists() {
+        userEntityRepository.save(UserEntity.builder()
+                .email("exists@example.com")
+                .name("a")
+                .lastName("b")
+                .idNumber("1")
+                .rolId(savedRoleEntity.getRolId())
+                .baseSalary(BigDecimal.ONE)
+                .build()
+        ).block();
+        User example = User.builder().email("exists@example.com").build();
+
+        Mono<Boolean> result = userRepository.exists(example);
+
+        StepVerifier.create(result)
+                .expectNext(true).verifyComplete();
+    }
+
+    @Test
+    @DisplayName("exists() debe devolver false cuando no existe un usuario con el criterio de búsqueda")
+    void exists_shouldReturnFalse_whenUserDoesNotExist() {
+        User example = User.builder().email("nonexistent@example.com").build();
+
+        Mono<Boolean> result = userRepository.exists(example);
+
+        StepVerifier.create(result)
+                .expectNext(false).verifyComplete();
+    }
+}
