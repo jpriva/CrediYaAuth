@@ -11,4 +11,13 @@ public class Role {
     private Integer rolId;
     private String name;
     private String description;
+
+    @Override
+    public String toString() {
+        return "Role{" +
+                "rolId=" + rolId +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                '}';
+    }
 }

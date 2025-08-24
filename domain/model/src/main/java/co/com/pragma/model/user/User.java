@@ -37,4 +37,20 @@ public class User {
             this.baseSalary = this.baseSalary.setScale(2, RoundingMode.HALF_UP);
         }
     }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "userId=" + userId +
+                ", name='" + name + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", email='" + email + '\'' +
+                ", idNumber='" + idNumber + '\'' +
+                ", role=" + role.toString() +
+                ", baseSalary=" + baseSalary +
+                ", phone='" + phone + '\'' +
+                ", address='" + address + '\'' +
+                ", birthDate=" + birthDate +
+                '}';
+    }
 }

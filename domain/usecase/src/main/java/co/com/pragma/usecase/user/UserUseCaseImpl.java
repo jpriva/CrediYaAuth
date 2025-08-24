@@ -1,8 +1,10 @@
 package co.com.pragma.usecase.user;
 
+import co.com.pragma.model.logs.gateways.LoggerPort;
 import co.com.pragma.model.user.Role;
 import co.com.pragma.model.user.User;
 import co.com.pragma.model.user.exceptions.*;
+import co.com.pragma.model.transaction.gateways.TransactionalPort;
 import co.com.pragma.model.user.gateways.RoleRepository;
 import co.com.pragma.model.user.gateways.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -15,12 +17,17 @@ public class UserUseCaseImpl implements UserUseCase {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final LoggerPort logger;
+    private final TransactionalPort transactionalPort;
 
     public Mono<User> save(User user) {
         UserException validationError = verifyUserData(user);
         if (validationError != null) {
+            logger.error("Validation error saving user", validationError);
             return Mono.error(validationError);
         }
+
+        logger.info("Starting save process for user: {}", user);
 
         user.trimFields();
         if (user.getRole() == null || user.getRole().getName() == null) {
@@ -28,16 +35,24 @@ public class UserUseCaseImpl implements UserUseCase {
         }
 
         return roleRepository.findOne(user.getRole())
-                .switchIfEmpty(Mono.error(new RoleNotFoundException()))
+                .switchIfEmpty(Mono.defer(() -> {
+                    logger.error("Role not found", new RoleNotFoundException());
+                    return Mono.error(new RoleNotFoundException());
+                }))
                 .flatMap(rol -> userRepository.exists(User.builder().email(user.getEmail()).build())
-                        .flatMap(exists -> exists
-                                ? Mono.error(new EmailTakenException())
-                                : userRepository.save(user.toBuilder().role(rol).build())
-                        )
-                );
+                        .flatMap(exists -> {
+                            if (Boolean.TRUE.equals(exists)){
+                                logger.error("Email already taken", new EmailTakenException());
+                                return Mono.error(new EmailTakenException());
+                            }
+                            logger.info("Saving user {}", user);
+                            return userRepository.save(user.toBuilder().role(rol).build());
+                        })
+                )
+                .as(transactionalPort::transactional);
     }
 
-    private UserException verifyUserData(User user){
+    private UserException verifyUserData(User user) {
         if (user == null || user.getName() == null || user.getName().isBlank() ||
                 user.getLastName() == null || user.getLastName().isBlank() ||
                 user.getEmail() == null || user.getEmail().isBlank() ||
