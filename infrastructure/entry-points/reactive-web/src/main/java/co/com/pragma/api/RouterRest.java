@@ -1,6 +1,8 @@
 package co.com.pragma.api;
 
-import co.com.pragma.api.dto.UserDTO;
+import co.com.pragma.api.dto.ErrorDTO;
+import co.com.pragma.api.dto.UserResponseDTO;
+import co.com.pragma.api.dto.UserSaveRequestDTO;
 import co.com.pragma.model.user.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -31,16 +33,26 @@ public class RouterRest {
                             operationId = "saveUser",
                             requestBody = @RequestBody(
                                     content = @Content(
-                                            schema = @Schema(implementation = UserDTO.class)
+                                            schema = @Schema(implementation = UserSaveRequestDTO.class)
                                     ),
                                     required = true,
                                     description = "User Requested Data"
                             ),
                             responses = {
                                     @ApiResponse(
-                                            responseCode = "200",
-                                            description = "OK",
-                                            content = @Content(schema = @Schema(implementation = User.class, name = "User Response"))
+                                            responseCode = "201",
+                                            description = "User Created Successfully",
+                                            content = @Content(schema = @Schema(implementation = UserResponseDTO.class))
+                                    ),
+                                    @ApiResponse(
+                                            responseCode = "400",
+                                            description = "Bad Request",
+                                            content = @Content(schema = @Schema(implementation = ErrorDTO.class))
+                                    ),
+                                    @ApiResponse(
+                                            responseCode = "409",
+                                            description = "Conflict",
+                                            content = @Content(schema = @Schema(implementation = ErrorDTO.class))
                                     )
                             }
                     )

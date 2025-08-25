@@ -59,6 +59,14 @@ public class UserUseCase implements IUserUseCase {
                 user.getBaseSalary() == null) {
             return new UserFieldException();
         }
+        if (user.getName().length() > 50 || user.getLastName().length() > 50 ||
+                user.getEmail().length() > 100 ||
+                (user.getIdNumber() != null && user.getIdNumber().length() > 50) ||
+                (user.getPhone() != null && user.getPhone().length() > 20) ||
+                (user.getAddress() != null && user.getAddress().length() > 255)
+        ){
+            return new SizeOutOfBoundsException();
+        }
         if (user.getBaseSalary().compareTo(BigDecimal.ZERO) < 0 ||
                 user.getBaseSalary().compareTo(new BigDecimal(15000000)) > 0) {
             return new SalaryUnboundException();

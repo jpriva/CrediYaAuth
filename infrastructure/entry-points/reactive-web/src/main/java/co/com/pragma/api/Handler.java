@@ -1,10 +1,14 @@
 package co.com.pragma.api;
 
-import co.com.pragma.api.dto.UserDTO;
+import co.com.pragma.api.dto.ErrorDTO;
+import co.com.pragma.api.dto.UserSaveRequestDTO;
 import co.com.pragma.api.mapper.UserMapper;
-import co.com.pragma.model.user.User;
-import co.com.pragma.usecase.user.IUserUseCase;
+import co.com.pragma.model.user.exceptions.EmailTakenException;
+import co.com.pragma.model.user.exceptions.UserException;
+import co.com.pragma.usecase.user.UserUseCase;
+import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
@@ -14,16 +18,26 @@ import reactor.core.publisher.Mono;
 @Component
 @RequiredArgsConstructor
 public class Handler {
-    private final IUserUseCase saveUser;
+    private final UserUseCase userUseCase;
+    private final Validator validator;
 
     public Mono<ServerResponse> listenPOSTSaveUserUseCase(ServerRequest serverRequest) {
-        return serverRequest.bodyToMono(UserDTO.class)
+        return serverRequest.bodyToMono(UserSaveRequestDTO.class)
                 .map(UserMapper::toDomain)
-                .flatMap(saveUser::save)
-                .flatMap( savedUser ->
-                        ServerResponse.ok()
+                .flatMap(userUseCase::save)
+                .map(UserMapper::toResponseDto)
+                .flatMap(savedUser ->
+                        ServerResponse.status(HttpStatus.CREATED)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .bodyValue(savedUser)
+                ).onErrorResume(EmailTakenException.class, ex ->
+                        ServerResponse.status(HttpStatus.CONFLICT)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .bodyValue(new ErrorDTO(ex.getCode(),ex.getMessage()))
+                ).onErrorResume(UserException.class, ex ->
+                        ServerResponse.badRequest()
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .bodyValue(new ErrorDTO(ex.getCode(),ex.getMessage()))
                 );
     }
 }
