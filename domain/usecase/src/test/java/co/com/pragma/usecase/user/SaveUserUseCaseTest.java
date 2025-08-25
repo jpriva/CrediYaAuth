@@ -25,7 +25,7 @@ import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class UserUseCaseTest {
+class SaveUserUseCaseTest {
 
     @Mock
     private UserRepository userRepository;
@@ -40,7 +40,7 @@ class UserUseCaseTest {
     private TransactionalPort operator;
 
     @InjectMocks
-    private UserUseCase userUseCase;
+    private SaveUserUseCase saveUserUseCase;
 
     private User.UserBuilder validUser;
     private Role clientRole;
@@ -59,7 +59,7 @@ class UserUseCaseTest {
 
     @Test
     @DisplayName("save() should save user successfully when data is valid and role is provided")
-    void save_shouldSaveUser_whenDataIsValidAndRolIsProvided() {
+    void save_shouldExecuteUser_whenDataIsValidAndRolIsProvided() {
 
         User userToSave = validUser.role(clientRole).build();
         User savedUser = userToSave.toBuilder().userId(1).build();
@@ -68,13 +68,13 @@ class UserUseCaseTest {
         when(userRepository.exists(any(User.class))).thenReturn(Mono.just(false));
         when(userRepository.save(any(User.class))).thenReturn(Mono.just(savedUser));
 
-        StepVerifier.create(userUseCase.save(userToSave))
+        StepVerifier.create(saveUserUseCase.execute(userToSave))
                 .expectNext(savedUser)
                 .verifyComplete();
     }
 
     @Test
-    void save_shouldSaveUserWithDefaultRol_whenRolIsNotProvided() {
+    void save_shouldExecuteUserWithDefaultRol_whenRolIsNotProvided() {
 
         User userWithoutRol = validUser.role(null).build();
 
@@ -85,13 +85,13 @@ class UserUseCaseTest {
         when(userRepository.exists(any(User.class))).thenReturn(Mono.just(false));
         when(userRepository.save(any(User.class))).thenReturn(Mono.just(savedUser));
 
-        StepVerifier.create(userUseCase.save(userWithoutRol))
+        StepVerifier.create(saveUserUseCase.execute(userWithoutRol))
                 .expectNext(savedUser)
                 .verifyComplete();
     }
 
     @Test
-    void save_shouldSaveUserWithDefaultRol_whenRolNameIsNull() {
+    void save_shouldExecuteUserWithDefaultRol_whenRolNameIsNull() {
 
         User userWithEmptyRol = validUser.role(Role.builder().name(null).build()).build();
 
@@ -103,7 +103,7 @@ class UserUseCaseTest {
         when(userRepository.save(any(User.class))).thenReturn(Mono.just(savedUser));
 
 
-        StepVerifier.create(userUseCase.save(userWithEmptyRol))
+        StepVerifier.create(saveUserUseCase.execute(userWithEmptyRol))
                 .expectNext(savedUser)
                 .verifyComplete();
     }
@@ -114,7 +114,7 @@ class UserUseCaseTest {
 
         @Test
         void save_shouldReturnUserFieldException_whenUserIsNull() {
-            StepVerifier.create(userUseCase.save(null))
+            StepVerifier.create(saveUserUseCase.execute(null))
                     .expectError(UserFieldException.class)
                     .verify();
         }
@@ -122,7 +122,7 @@ class UserUseCaseTest {
         @Test
         void save_shouldReturnUserFieldException_whenRequiredFieldsAreBlank() {
             User invalidUser = validUser.name("  ").build();
-            StepVerifier.create(userUseCase.save(invalidUser))
+            StepVerifier.create(saveUserUseCase.execute(invalidUser))
                     .expectError(UserFieldException.class)
                     .verify();
         }
@@ -130,7 +130,7 @@ class UserUseCaseTest {
         @Test
         void save_shouldReturnSalaryUnboundException_whenSalaryIsNegative() {
             User invalidUser = validUser.baseSalary(new BigDecimal("-100")).build();
-            StepVerifier.create(userUseCase.save(invalidUser))
+            StepVerifier.create(saveUserUseCase.execute(invalidUser))
                     .expectError(SalaryUnboundException.class)
                     .verify();
         }
@@ -138,7 +138,7 @@ class UserUseCaseTest {
         @Test
         void save_shouldReturnSalaryUnboundException_whenSalaryIsTooHigh() {
             User invalidUser = validUser.baseSalary(new BigDecimal("15000001")).build();
-            StepVerifier.create(userUseCase.save(invalidUser))
+            StepVerifier.create(saveUserUseCase.execute(invalidUser))
                     .expectError(SalaryUnboundException.class)
                     .verify();
         }
@@ -146,7 +146,7 @@ class UserUseCaseTest {
         @Test
         void save_shouldReturnEmailFormatException_whenEmailIsInvalid() {
             User invalidUser = validUser.email("invalid-email.com").build();
-            StepVerifier.create(userUseCase.save(invalidUser))
+            StepVerifier.create(saveUserUseCase.execute(invalidUser))
                     .expectError(EmailFormatException.class)
                     .verify();
         }
@@ -162,7 +162,7 @@ class UserUseCaseTest {
             User userToSave = validUser.role(clientRole).build();
             when(roleRepository.findOne(clientRole)).thenReturn(Mono.empty());
 
-            StepVerifier.create(userUseCase.save(userToSave))
+            StepVerifier.create(saveUserUseCase.execute(userToSave))
                     .expectError(RoleNotFoundException.class)
                     .verify();
         }
@@ -174,7 +174,7 @@ class UserUseCaseTest {
             when(roleRepository.findOne(clientRole)).thenReturn(Mono.just(clientRole));
             when(userRepository.exists(any(User.class))).thenReturn(Mono.just(true));
 
-            StepVerifier.create(userUseCase.save(userToSave))
+            StepVerifier.create(saveUserUseCase.execute(userToSave))
                     .expectError(EmailTakenException.class)
                     .verify();
         }

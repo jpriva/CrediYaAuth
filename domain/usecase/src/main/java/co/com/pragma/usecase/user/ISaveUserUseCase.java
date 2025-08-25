@@ -3,6 +3,6 @@ package co.com.pragma.usecase.user;
 import co.com.pragma.model.user.User;
 import reactor.core.publisher.Mono;
 
-public interface IUserUseCase {
-    Mono<User> save(User user);
+public interface ISaveUserUseCase {
+    Mono<User> execute(User user);
 }

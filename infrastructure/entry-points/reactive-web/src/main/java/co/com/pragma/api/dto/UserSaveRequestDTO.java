@@ -48,9 +48,8 @@ public class UserSaveRequestDTO {
     @Schema(description = "User's base salary", example = "5000000")
     private BigDecimal baseSalary;
 
-    @NotNull(message = "Role ID can't be null")
-    @Schema(description = "ID of the role to be assigned to the user", example = "3")
-    private Integer rolId;
+    @Schema(description = "Name of the role to be assigned to the user", example = "CLIENTE")
+    private String rolName;
 
     @Size(max = 20, message = "Phone must have less than 20 characters")
     @Schema(description = "User's contact phone number", example = "3001234567")

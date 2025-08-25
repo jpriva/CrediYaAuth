@@ -13,14 +13,14 @@ import reactor.core.publisher.Mono;
 import java.math.BigDecimal;
 
 @RequiredArgsConstructor
-public class UserUseCase implements IUserUseCase {
+public class SaveUserUseCase implements ISaveUserUseCase {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final LoggerPort logger;
     private final TransactionalPort transactionalPort;
 
-    public Mono<User> save(User user) {
+    public Mono<User> execute(User user) {
         UserException validationError = verifyUserData(user);
         if (validationError != null) {
             logger.error("Validation error saving user", validationError);
@@ -46,7 +46,11 @@ public class UserUseCase implements IUserUseCase {
                                 return Mono.error(new EmailTakenException());
                             }
                             logger.info("Saving user {}", user);
-                            return userRepository.save(user.toBuilder().role(rol).build());
+                            return userRepository.save(user.toBuilder().role(rol).build())
+                                    .map( savedUser -> {
+                                        logger.info("User saved {}", savedUser);
+                                        return savedUser;
+                                    });
                         })
                 )
                 .as(transactionalPort::transactional);

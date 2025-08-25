@@ -8,6 +8,7 @@ public final class ErrorMessage {
     public static final String EMAIL_FORMAT = "Invalid email format.";
     public static final String EMAIL_TAKEN = "Email is already taken.";
     public static final String SIZE_OUT_OF_BOUNDS = "Size out of bounds.";
+    public static final String FAIL_READ_REQUEST = "Failed to read HTTP message.";
     public static final String USER_NOT_FOUND_CODE = "U001";
     public static final String ROL_NOT_FOUND_CODE = "R001";
     public static final String REQUIRED_FIELDS_CODE = "U002";
@@ -15,6 +16,8 @@ public final class ErrorMessage {
     public static final String EMAIL_FORMAT_CODE = "U004";
     public static final String EMAIL_TAKEN_CODE = "U005";
     public static final String SIZE_OUT_OF_BOUNDS_CODE = "U006";
+    public static final String FAIL_READ_REQUEST_CODE = "W001";
+    public static final String UNKNOWN_CODE = "UNKNOWN";
 
     private ErrorMessage() {}
 }
