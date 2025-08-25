@@ -1,5 +1,7 @@
 package co.com.pragma.api;
 
+import co.com.pragma.api.dto.UserDTO;
+import co.com.pragma.api.mapper.UserMapper;
 import co.com.pragma.model.user.User;
 import co.com.pragma.usecase.user.IUserUseCase;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +17,8 @@ public class Handler {
     private final IUserUseCase saveUser;
 
     public Mono<ServerResponse> listenPOSTSaveUserUseCase(ServerRequest serverRequest) {
-        return serverRequest.bodyToMono(User.class)
+        return serverRequest.bodyToMono(UserDTO.class)
+                .map(UserMapper::toDomain)
                 .flatMap(saveUser::save)
                 .flatMap( savedUser ->
                         ServerResponse.ok()
