@@ -3,7 +3,6 @@ package co.com.pragma.api;
 import co.com.pragma.api.dto.ErrorDTO;
 import co.com.pragma.api.dto.UserResponseDTO;
 import co.com.pragma.api.dto.UserSaveRequestDTO;
-import co.com.pragma.model.user.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
