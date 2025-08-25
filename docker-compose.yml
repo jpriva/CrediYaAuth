@@ -1,0 +1,17 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql_auth
+    environment:
+      MYSQL_ROOT_PASSWORD: admin1234
+      MYSQL_DATABASE: auth_db
+      MYSQL_USER: jpriva
+      MYSQL_PASSWORD: pass12345
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_auth:/var/lib/mysql
+      
+
+volumes:
+  mysql_auth:
