@@ -23,34 +23,34 @@ public class RouterRest {
     @Bean
     @RouterOperations({
             @RouterOperation(
-                    path = "/api/v1/usuarios",
+                    path = ApiConstants.ApiPaths.USERS_PATH,
                     produces = {MediaType.APPLICATION_JSON_VALUE},
                     method = RequestMethod.POST,
                     beanClass = Handler.class,
                     beanMethod = "listenPOSTSaveUserUseCase",
                     operation = @Operation(
-                            operationId = "saveUser",
+                            operationId = ApiConstants.Operations.SAVE_USER_OPERATION_ID,
                             requestBody = @RequestBody(
                                     content = @Content(
                                             schema = @Schema(implementation = UserSaveRequestDTO.class)
                                     ),
                                     required = true,
-                                    description = "User Requested Data"
+                                    description = ApiConstants.Operations.SAVE_USER_REQUEST_BODY_DESC
                             ),
                             responses = {
                                     @ApiResponse(
-                                            responseCode = "201",
-                                            description = "User Created Successfully",
+                                            responseCode = ApiConstants.Responses.SUCCESS_CREATED_CODE,
+                                            description = ApiConstants.Responses.SAVE_USER_SUCCESS_CREATED_DESC,
                                             content = @Content(schema = @Schema(implementation = UserResponseDTO.class))
                                     ),
                                     @ApiResponse(
-                                            responseCode = "400",
-                                            description = "Bad Request",
+                                            responseCode = ApiConstants.Responses.BAD_REQUEST_CODE,
+                                            description = ApiConstants.Responses.SAVE_USER_BAD_REQUEST_DESC,
                                             content = @Content(schema = @Schema(implementation = ErrorDTO.class))
                                     ),
                                     @ApiResponse(
-                                            responseCode = "409",
-                                            description = "Conflict",
+                                            responseCode = ApiConstants.Responses.CONFLICT_CODE,
+                                            description = ApiConstants.Responses.SAVE_USER_CONFLICT_DESC,
                                             content = @Content(schema = @Schema(implementation = ErrorDTO.class))
                                     )
                             }
@@ -59,7 +59,7 @@ public class RouterRest {
     })
     public RouterFunction<ServerResponse> routerFunction(Handler handler) {
         return RouterFunctions.route()
-                .POST("/api/v1/usuarios", handler::listenPOSTSaveUserUseCase)
+                .POST(ApiConstants.ApiPaths.USERS_PATH, handler::listenPOSTSaveUserUseCase)
                 .build();
     }
 }

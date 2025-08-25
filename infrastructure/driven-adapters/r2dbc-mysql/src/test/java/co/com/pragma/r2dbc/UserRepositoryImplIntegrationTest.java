@@ -105,7 +105,7 @@ class UserRepositoryImplIntegrationTest {
                     assert savedUser.getName().equals(userToSave.getName());
                     assert savedUser.getRole() != null;
                     assert savedUser.getRole().getRolId().equals(savedRoleEntity.getRolId());
-                    assert savedUser.getRole().getName().equals(savedRoleEntity.getName()); // Verificamos que el nombre también se mapee
+                    assert savedUser.getRole().getName().equals(savedRoleEntity.getName());
                 })
                 .verifyComplete();
 
@@ -153,7 +153,6 @@ class UserRepositoryImplIntegrationTest {
     }
 
     @Test
-    @DisplayName("exists() debe devolver false cuando no existe un usuario con el criterio de búsqueda")
     void exists_shouldReturnFalse_whenUserDoesNotExist() {
         User example = User.builder().email("nonexistent@example.com").build();
 

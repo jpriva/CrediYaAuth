@@ -11,6 +11,6 @@ dependencies {
     runtimeOnly 'com.mysql:mysql-connector-j:8.2.0'
 
     testImplementation 'com.h2database:h2'
-    testImplementation 'io.r2dbc:r2dbc-h2' // <-- AÑADE ESTA LÍNEA
+    testImplementation 'io.r2dbc:r2dbc-h2'
     testImplementation 'org.reactivecommons.utils:object-mapper:0.1.0'
 }

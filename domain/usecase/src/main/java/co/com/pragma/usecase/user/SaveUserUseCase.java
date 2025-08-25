@@ -13,7 +13,7 @@ import reactor.core.publisher.Mono;
 import java.math.BigDecimal;
 
 @RequiredArgsConstructor
-public class SaveUserUseCase implements ISaveUserUseCase {
+public class SaveUserUseCase {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
@@ -27,13 +27,18 @@ public class SaveUserUseCase implements ISaveUserUseCase {
             return Mono.error(validationError);
         }
 
-        logger.info("Starting save process for user: {}", user);
-
         user.trimFields();
         if (user.getRole() == null || user.getRole().getName() == null) {
             user.setRole(Role.builder().name("CLIENTE").build());
         }
 
+        return transactionalOperation(user)
+                .doOnSuccess(savedUser -> logger.info("User saved {}", savedUser))
+                .as(transactionalPort::transactional);
+    }
+
+    private Mono<User> transactionalOperation(User user) {
+        logger.info("Starting save process for user: {}", user);
         return roleRepository.findOne(user.getRole())
                 .switchIfEmpty(Mono.defer(() -> {
                     logger.error("Role not found", new RoleNotFoundException());
@@ -46,14 +51,9 @@ public class SaveUserUseCase implements ISaveUserUseCase {
                                 return Mono.error(new EmailTakenException());
                             }
                             logger.info("Saving user {}", user);
-                            return userRepository.save(user.toBuilder().role(rol).build())
-                                    .map( savedUser -> {
-                                        logger.info("User saved {}", savedUser);
-                                        return savedUser;
-                                    });
+                            return userRepository.save(user.toBuilder().role(rol).build());
                         })
-                )
-                .as(transactionalPort::transactional);
+                );
     }
 
     private UserException verifyUserData(User user) {

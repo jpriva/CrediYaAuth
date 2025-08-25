@@ -58,7 +58,6 @@ class SaveUserUseCaseTest {
     }
 
     @Test
-    @DisplayName("save() should save user successfully when data is valid and role is provided")
     void save_shouldExecuteUser_whenDataIsValidAndRolIsProvided() {
 
         User userToSave = validUser.role(clientRole).build();
@@ -78,8 +77,7 @@ class SaveUserUseCaseTest {
 
         User userWithoutRol = validUser.role(null).build();
 
-        User userWithClientRol = userWithoutRol.toBuilder().role(clientRole).build();
-        User savedUser = userWithClientRol.toBuilder().userId(1).build();
+        User savedUser = userWithoutRol.toBuilder().userId(1).role(clientRole).build();
 
         when(roleRepository.findOne(any(Role.class))).thenReturn(Mono.just(clientRole));
         when(userRepository.exists(any(User.class))).thenReturn(Mono.just(false));
@@ -148,6 +146,60 @@ class SaveUserUseCaseTest {
             User invalidUser = validUser.email("invalid-email.com").build();
             StepVerifier.create(saveUserUseCase.execute(invalidUser))
                     .expectError(EmailFormatException.class)
+                    .verify();
+        }
+
+        @Test
+        void save_shouldReturnSizeOutOfBoundsException_whenNameIsTooLong() {
+            String longString = "a".repeat(51);
+            User invalidUser = validUser.name(longString).build();
+            StepVerifier.create(saveUserUseCase.execute(invalidUser))
+                    .expectError(SizeOutOfBoundsException.class)
+                    .verify();
+        }
+
+        @Test
+        void save_shouldReturnSizeOutOfBoundsException_whenLastNameIsTooLong() {
+            String longString = "a".repeat(51);
+            User invalidUser = validUser.lastName(longString).build();
+            StepVerifier.create(saveUserUseCase.execute(invalidUser))
+                    .expectError(SizeOutOfBoundsException.class)
+                    .verify();
+        }
+
+        @Test
+        void save_shouldReturnSizeOutOfBoundsException_whenEmailIsTooLong() {
+            String longString = "a".repeat(101);
+            User invalidUser = validUser.email(longString).build();
+            StepVerifier.create(saveUserUseCase.execute(invalidUser))
+                    .expectError(SizeOutOfBoundsException.class)
+                    .verify();
+        }
+
+        @Test
+        void save_shouldReturnSizeOutOfBoundsException_whenIdNumberIsTooLong() {
+            String longString = "a".repeat(51);
+            User invalidUser = validUser.idNumber(longString).build();
+            StepVerifier.create(saveUserUseCase.execute(invalidUser))
+                    .expectError(SizeOutOfBoundsException.class)
+                    .verify();
+        }
+
+        @Test
+        void save_shouldReturnSizeOutOfBoundsException_whenPhoneIsTooLong() {
+            String longString = "a".repeat(21);
+            User invalidUser = validUser.phone(longString).build();
+            StepVerifier.create(saveUserUseCase.execute(invalidUser))
+                    .expectError(SizeOutOfBoundsException.class)
+                    .verify();
+        }
+
+        @Test
+        void save_shouldReturnSizeOutOfBoundsException_whenAddressIsTooLong() {
+            String longString = "a".repeat(256);
+            User invalidUser = validUser.address(longString).build();
+            StepVerifier.create(saveUserUseCase.execute(invalidUser))
+                    .expectError(SizeOutOfBoundsException.class)
                     .verify();
         }
     }

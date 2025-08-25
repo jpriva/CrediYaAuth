@@ -1,6 +1,7 @@
 package co.com.pragma.config;
 
 import co.com.pragma.model.transaction.gateways.TransactionalPort;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,16 +14,18 @@ import org.springframework.transaction.reactive.TransactionalOperator;
 public class TransactionConfig {
 
     @Bean
-    public TransactionalOperator transactionalOperator(ReactiveTransactionManager transactionManager) {
-        return TransactionalOperator.create(transactionManager);
-    }
-
-    @Bean
-    public TransactionalPort transactionalPort(TransactionalOperator transactionalOperator){
+    public TransactionalPort transactionalPort(ReactiveTransactionManager transactionManager){
         return new TransactionalPort() {
             @Override
             public <T> Mono<T> transactional(Mono<T> mono) {
-                return mono.as(transactionalOperator::transactional);
+                TransactionalOperator transactionalOperator = TransactionalOperator.create(transactionManager);
+                return transactionalOperator.transactional(mono);
+            }
+
+            @Override
+            public <T> Flux<T> transactional(Flux<T> flux) {
+                TransactionalOperator transactionalOperator = TransactionalOperator.create(transactionManager);
+                return transactionalOperator.transactional(flux);
             }
         };
     }

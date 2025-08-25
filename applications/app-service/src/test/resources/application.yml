@@ -1,0 +1,17 @@
+spring:
+  r2dbc:
+    url: r2dbc:h2:mem:///testdb;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+  flyway:
+    url: jdbc:h2:mem:testdb
+    user: sa
+    password:
+
+logging:
+  level:
+    org.springframework.r2dbc.core.DefaultDatabaseClient: DEBUG
+    org.springframework.transaction.interceptor: DEBUG
+    org.springframework.transaction.reactive: DEBUG
+    org.springframework.transaction: DEBUG
+    io.r2dbc.h2: DEBUG

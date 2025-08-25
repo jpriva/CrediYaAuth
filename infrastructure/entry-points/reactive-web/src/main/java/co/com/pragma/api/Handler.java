@@ -7,7 +7,7 @@ import co.com.pragma.model.logs.gateways.LoggerPort;
 import co.com.pragma.model.user.exceptions.EmailTakenException;
 import co.com.pragma.model.user.exceptions.ErrorMessage;
 import co.com.pragma.model.user.exceptions.UserException;
-import co.com.pragma.usecase.user.ISaveUserUseCase;
+import co.com.pragma.usecase.user.SaveUserUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -20,7 +20,7 @@ import reactor.core.publisher.Mono;
 @Component
 @RequiredArgsConstructor
 public class Handler {
-    private final ISaveUserUseCase userUseCase;
+    private final SaveUserUseCase userUseCase;
     private final LoggerPort logger;
 
     public Mono<ServerResponse> listenPOSTSaveUserUseCase(ServerRequest serverRequest) {
