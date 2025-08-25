@@ -41,9 +41,9 @@ cors:
 springdoc:
   api-docs:
     info:
-      title: Crediya Auth API Microservice
+      title: "Crediya Auth API Microservice"
       version: "1.0.0"
-      description: API for Crediya Auth Microservice
+      description: "This is the API for Crediya Auth Microservice"
   swagger-ui:
     path: /swagger-ui.html
 
