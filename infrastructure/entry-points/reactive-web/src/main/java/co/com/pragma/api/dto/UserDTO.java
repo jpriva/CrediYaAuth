@@ -44,9 +44,9 @@ public class UserDTO {
 
     private Integer rolId;
 
-    @Size(max = 20, message = "Phone must be between 1 and 20 characters")
+    @Size(max = 20, message = "Phone must have less than 20 characters")
     private String phone;
-    @Size(max = 255, message = "Address must be between 1 and 255 characters")
+    @Size(max = 255, message = "Address must have less than 255 characters")
     private String address;
     private LocalDate birthDate;
 }
