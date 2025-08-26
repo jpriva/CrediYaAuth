@@ -25,7 +25,7 @@ import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class SaveUserUseCaseTest {
+class UserUseCaseTest {
 
     @Mock
     private UserRepository userRepository;
@@ -40,7 +40,7 @@ class SaveUserUseCaseTest {
     private TransactionalPort operator;
 
     @InjectMocks
-    private SaveUserUseCase saveUserUseCase;
+    private UserUseCase userUseCase;
 
     private User.UserBuilder validUser;
     private Role clientRole;
@@ -58,7 +58,7 @@ class SaveUserUseCaseTest {
     }
 
     @Test
-    void save_shouldExecuteUser_whenDataIsValidAndRolIsProvided() {
+    void save_shouldSaveUser_whenDataIsValidAndRolIsProvided() {
 
         User userToSave = validUser.role(clientRole).build();
         User savedUser = userToSave.toBuilder().userId(1).build();
@@ -67,13 +67,13 @@ class SaveUserUseCaseTest {
         when(userRepository.exists(any(User.class))).thenReturn(Mono.just(false));
         when(userRepository.save(any(User.class))).thenReturn(Mono.just(savedUser));
 
-        StepVerifier.create(saveUserUseCase.execute(userToSave))
+        StepVerifier.create(userUseCase.saveUser(userToSave))
                 .expectNext(savedUser)
                 .verifyComplete();
     }
 
     @Test
-    void save_shouldExecuteUserWithDefaultRol_whenRolIsNotProvided() {
+    void save_shouldSaveUserWithDefaultRol_whenRolIsNotProvided() {
 
         User userWithoutRol = validUser.role(null).build();
 
@@ -83,13 +83,13 @@ class SaveUserUseCaseTest {
         when(userRepository.exists(any(User.class))).thenReturn(Mono.just(false));
         when(userRepository.save(any(User.class))).thenReturn(Mono.just(savedUser));
 
-        StepVerifier.create(saveUserUseCase.execute(userWithoutRol))
+        StepVerifier.create(userUseCase.saveUser(userWithoutRol))
                 .expectNext(savedUser)
                 .verifyComplete();
     }
 
     @Test
-    void save_shouldExecuteUserWithDefaultRol_whenRolNameIsNull() {
+    void save_shouldSaveUserWithDefaultRol_whenRolNameIsNull() {
 
         User userWithEmptyRol = validUser.role(Role.builder().name(null).build()).build();
 
@@ -101,7 +101,7 @@ class SaveUserUseCaseTest {
         when(userRepository.save(any(User.class))).thenReturn(Mono.just(savedUser));
 
 
-        StepVerifier.create(saveUserUseCase.execute(userWithEmptyRol))
+        StepVerifier.create(userUseCase.saveUser(userWithEmptyRol))
                 .expectNext(savedUser)
                 .verifyComplete();
     }
@@ -112,7 +112,7 @@ class SaveUserUseCaseTest {
 
         @Test
         void save_shouldReturnUserFieldException_whenUserIsNull() {
-            StepVerifier.create(saveUserUseCase.execute(null))
+            StepVerifier.create(userUseCase.saveUser(null))
                     .expectError(UserFieldException.class)
                     .verify();
         }
@@ -120,7 +120,7 @@ class SaveUserUseCaseTest {
         @Test
         void save_shouldReturnUserFieldException_whenRequiredFieldsAreBlank() {
             User invalidUser = validUser.name("  ").build();
-            StepVerifier.create(saveUserUseCase.execute(invalidUser))
+            StepVerifier.create(userUseCase.saveUser(invalidUser))
                     .expectError(UserFieldException.class)
                     .verify();
         }
@@ -128,7 +128,7 @@ class SaveUserUseCaseTest {
         @Test
         void save_shouldReturnSalaryUnboundException_whenSalaryIsNegative() {
             User invalidUser = validUser.baseSalary(new BigDecimal("-100")).build();
-            StepVerifier.create(saveUserUseCase.execute(invalidUser))
+            StepVerifier.create(userUseCase.saveUser(invalidUser))
                     .expectError(SalaryUnboundException.class)
                     .verify();
         }
@@ -136,7 +136,7 @@ class SaveUserUseCaseTest {
         @Test
         void save_shouldReturnSalaryUnboundException_whenSalaryIsTooHigh() {
             User invalidUser = validUser.baseSalary(new BigDecimal("15000001")).build();
-            StepVerifier.create(saveUserUseCase.execute(invalidUser))
+            StepVerifier.create(userUseCase.saveUser(invalidUser))
                     .expectError(SalaryUnboundException.class)
                     .verify();
         }
@@ -144,7 +144,7 @@ class SaveUserUseCaseTest {
         @Test
         void save_shouldReturnEmailFormatException_whenEmailIsInvalid() {
             User invalidUser = validUser.email("invalid-email.com").build();
-            StepVerifier.create(saveUserUseCase.execute(invalidUser))
+            StepVerifier.create(userUseCase.saveUser(invalidUser))
                     .expectError(EmailFormatException.class)
                     .verify();
         }
@@ -153,7 +153,7 @@ class SaveUserUseCaseTest {
         void save_shouldReturnSizeOutOfBoundsException_whenNameIsTooLong() {
             String longString = "a".repeat(51);
             User invalidUser = validUser.name(longString).build();
-            StepVerifier.create(saveUserUseCase.execute(invalidUser))
+            StepVerifier.create(userUseCase.saveUser(invalidUser))
                     .expectError(SizeOutOfBoundsException.class)
                     .verify();
         }
@@ -162,7 +162,7 @@ class SaveUserUseCaseTest {
         void save_shouldReturnSizeOutOfBoundsException_whenLastNameIsTooLong() {
             String longString = "a".repeat(51);
             User invalidUser = validUser.lastName(longString).build();
-            StepVerifier.create(saveUserUseCase.execute(invalidUser))
+            StepVerifier.create(userUseCase.saveUser(invalidUser))
                     .expectError(SizeOutOfBoundsException.class)
                     .verify();
         }
@@ -171,7 +171,7 @@ class SaveUserUseCaseTest {
         void save_shouldReturnSizeOutOfBoundsException_whenEmailIsTooLong() {
             String longString = "a".repeat(101);
             User invalidUser = validUser.email(longString).build();
-            StepVerifier.create(saveUserUseCase.execute(invalidUser))
+            StepVerifier.create(userUseCase.saveUser(invalidUser))
                     .expectError(SizeOutOfBoundsException.class)
                     .verify();
         }
@@ -180,7 +180,7 @@ class SaveUserUseCaseTest {
         void save_shouldReturnSizeOutOfBoundsException_whenIdNumberIsTooLong() {
             String longString = "a".repeat(51);
             User invalidUser = validUser.idNumber(longString).build();
-            StepVerifier.create(saveUserUseCase.execute(invalidUser))
+            StepVerifier.create(userUseCase.saveUser(invalidUser))
                     .expectError(SizeOutOfBoundsException.class)
                     .verify();
         }
@@ -189,7 +189,7 @@ class SaveUserUseCaseTest {
         void save_shouldReturnSizeOutOfBoundsException_whenPhoneIsTooLong() {
             String longString = "a".repeat(21);
             User invalidUser = validUser.phone(longString).build();
-            StepVerifier.create(saveUserUseCase.execute(invalidUser))
+            StepVerifier.create(userUseCase.saveUser(invalidUser))
                     .expectError(SizeOutOfBoundsException.class)
                     .verify();
         }
@@ -198,7 +198,7 @@ class SaveUserUseCaseTest {
         void save_shouldReturnSizeOutOfBoundsException_whenAddressIsTooLong() {
             String longString = "a".repeat(256);
             User invalidUser = validUser.address(longString).build();
-            StepVerifier.create(saveUserUseCase.execute(invalidUser))
+            StepVerifier.create(userUseCase.saveUser(invalidUser))
                     .expectError(SizeOutOfBoundsException.class)
                     .verify();
         }
@@ -214,7 +214,7 @@ class SaveUserUseCaseTest {
             User userToSave = validUser.role(clientRole).build();
             when(roleRepository.findOne(clientRole)).thenReturn(Mono.empty());
 
-            StepVerifier.create(saveUserUseCase.execute(userToSave))
+            StepVerifier.create(userUseCase.saveUser(userToSave))
                     .expectError(RoleNotFoundException.class)
                     .verify();
         }
@@ -226,7 +226,7 @@ class SaveUserUseCaseTest {
             when(roleRepository.findOne(clientRole)).thenReturn(Mono.just(clientRole));
             when(userRepository.exists(any(User.class))).thenReturn(Mono.just(true));
 
-            StepVerifier.create(saveUserUseCase.execute(userToSave))
+            StepVerifier.create(userUseCase.saveUser(userToSave))
                     .expectError(EmailTakenException.class)
                     .verify();
         }

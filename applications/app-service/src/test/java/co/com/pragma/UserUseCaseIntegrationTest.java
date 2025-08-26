@@ -1,10 +1,9 @@
 package co.com.pragma;
 
 import co.com.pragma.model.user.User;
-import co.com.pragma.r2dbc.RoleEntityRepository;
 import co.com.pragma.r2dbc.UserEntityRepository;
 import co.com.pragma.r2dbc.UserRepositoryImpl;
-import co.com.pragma.usecase.user.SaveUserUseCase;
+import co.com.pragma.usecase.user.UserUseCase;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +21,7 @@ import static org.mockito.Mockito.doReturn;
 @SpringBootTest
 class UserUseCaseIntegrationTest {
     @Autowired
-    private SaveUserUseCase saveUserUseCase;
+    private UserUseCase userUseCase;
 
     @Autowired
     private UserEntityRepository userEntityRepository;
@@ -46,7 +45,7 @@ class UserUseCaseIntegrationTest {
         doReturn(Mono.error(new DataIntegrityViolationException("Simulated database error")))
                 .when(userRepository).save(any(User.class));
 
-        Mono<User> saveOperation = saveUserUseCase.execute(userToSave);
+        Mono<User> saveOperation = userUseCase.saveUser(userToSave);
 
         StepVerifier.create(saveOperation)
                 .expectError(DataIntegrityViolationException.class)

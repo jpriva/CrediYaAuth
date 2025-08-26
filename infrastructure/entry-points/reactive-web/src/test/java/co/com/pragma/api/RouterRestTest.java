@@ -1,15 +1,13 @@
 package co.com.pragma.api;
 
-import co.com.pragma.api.dto.ErrorDTO;
 import co.com.pragma.api.dto.UserResponseDTO;
 import co.com.pragma.api.dto.UserSaveRequestDTO;
 import co.com.pragma.model.logs.gateways.LoggerPort;
 import co.com.pragma.model.user.Role;
 import co.com.pragma.model.user.User;
 import co.com.pragma.model.user.exceptions.EmailTakenException;
-import co.com.pragma.model.user.exceptions.SizeOutOfBoundsException;
 import co.com.pragma.model.user.exceptions.UserFieldException;
-import co.com.pragma.usecase.user.SaveUserUseCase;
+import co.com.pragma.usecase.user.UserUseCase;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -38,7 +36,7 @@ class RouterRestTest {
     private LoggerPort logger;
 
     @MockitoBean
-    private SaveUserUseCase saveUserUseCase;
+    private UserUseCase userUseCase;
 
     private UserSaveRequestDTO requestDto;
 
@@ -68,7 +66,7 @@ class RouterRestTest {
                 .role(Role.builder().rolId(3).name("CLIENTE").description("Test Client").build())
                 .baseSalary(new BigDecimal(5000000))
                 .build();
-        when(saveUserUseCase.execute(any(User.class))).thenReturn(Mono.just(useCaseResponse));
+        when(userUseCase.saveUser(any(User.class))).thenReturn(Mono.just(useCaseResponse));
         webTestClient.post()
                 .uri(ApiConstants.ApiPaths.USERS_PATH)
                 .accept(MediaType.APPLICATION_JSON)
@@ -86,7 +84,7 @@ class RouterRestTest {
 
     @Test
     void saveUser_shouldReturnConflict_whenEmailIsTaken() {
-        when(saveUserUseCase.execute(any(User.class))).thenReturn(Mono.error(new EmailTakenException()));
+        when(userUseCase.saveUser(any(User.class))).thenReturn(Mono.error(new EmailTakenException()));
         webTestClient.post()
                 .uri(ApiConstants.ApiPaths.USERS_PATH)
                 .accept(MediaType.APPLICATION_JSON)
@@ -97,7 +95,7 @@ class RouterRestTest {
 
     @Test
     void saveUser_shouldReturnBadRequest_whenMissingRequiredFields() {
-        when(saveUserUseCase.execute(any(User.class))).thenReturn(Mono.error(new UserFieldException()));
+        when(userUseCase.saveUser(any(User.class))).thenReturn(Mono.error(new UserFieldException()));
         webTestClient.post()
                 .uri(ApiConstants.ApiPaths.USERS_PATH)
                 .accept(MediaType.APPLICATION_JSON)
@@ -108,7 +106,7 @@ class RouterRestTest {
 
     @Test
     void saveUser_shouldReturnBadRequest_whenUnknownExceptionIsThrown() {
-        when(saveUserUseCase.execute(any(User.class))).thenReturn(Mono.error(new Exception()));
+        when(userUseCase.saveUser(any(User.class))).thenReturn(Mono.error(new Exception()));
         webTestClient.post()
                 .uri(ApiConstants.ApiPaths.USERS_PATH)
                 .accept(MediaType.APPLICATION_JSON)

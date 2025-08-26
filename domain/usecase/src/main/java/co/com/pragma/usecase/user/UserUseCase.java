@@ -14,14 +14,14 @@ import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
 
 @RequiredArgsConstructor
-public class SaveUserUseCase {
+public class UserUseCase {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final LoggerPort logger;
     private final TransactionalPort transactionalPort;
 
-    public Mono<User> execute(User user) {
+    public Mono<User> saveUser(User user) {
         UserException validationError = verifyUserData(user);
         if (validationError != null) {
             logger.error(validationError.getMessage(), validationError);
@@ -33,12 +33,14 @@ public class SaveUserUseCase {
             user.setRole(Role.builder().name(DefaultValues.DEFAULT_ROLE).build());
         }
 
-        return persistenceOperation(user)
+        return saveUserPersistenceOperation(user)
                 .doOnSuccess(savedUser -> logger.info(LogMessages.SAVED_USER + " {}", savedUser))
                 .as(transactionalPort::transactional);
     }
 
-    private Mono<User> persistenceOperation(User user) {
+    // START Private methods ***********************************************************
+
+    private Mono<User> saveUserPersistenceOperation(User user) {
         logger.info(LogMessages.START_SAVING_USER_PROCESS + " {}", user);
         return roleRepository.findOne(user.getRole())
                 .switchIfEmpty(Mono.defer(() -> {
@@ -82,5 +84,6 @@ public class SaveUserUseCase {
         }
         return null;
     }
+    // END Private methods ***********************************************************
 
 }

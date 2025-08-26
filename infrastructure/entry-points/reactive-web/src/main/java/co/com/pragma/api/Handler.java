@@ -7,7 +7,7 @@ import co.com.pragma.model.logs.gateways.LoggerPort;
 import co.com.pragma.model.user.exceptions.EmailTakenException;
 import co.com.pragma.model.user.constants.ErrorMessage;
 import co.com.pragma.model.user.exceptions.UserException;
-import co.com.pragma.usecase.user.SaveUserUseCase;
+import co.com.pragma.usecase.user.UserUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -20,20 +20,20 @@ import reactor.core.publisher.Mono;
 @Component
 @RequiredArgsConstructor
 public class Handler {
-    private final SaveUserUseCase userUseCase;
+    private final UserUseCase userUseCase;
     private final LoggerPort logger;
 
     public Mono<ServerResponse> listenPOSTSaveUserUseCase(ServerRequest serverRequest) {
         return serverRequest.bodyToMono(UserSaveRequestDTO.class)
                 .map(UserMapper::toDomain)
-                .flatMap(userUseCase::execute)
+                .flatMap(userUseCase::saveUser)
                 .map(UserMapper::toResponseDto)
                 .flatMap(savedUser ->
                         ServerResponse.status(HttpStatus.CREATED)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .bodyValue(savedUser)
                 ).onErrorResume(ServerWebInputException.class, ex -> {
-                    logger.error("Error retrieving request.", ex);
+                    logger.error(ErrorMessage.FAIL_READ_REQUEST, ex);
                     return ServerResponse.status(HttpStatus.BAD_REQUEST)
                             .contentType(MediaType.APPLICATION_JSON)
                             .bodyValue(new ErrorDTO(ErrorMessage.FAIL_READ_REQUEST_CODE, ErrorMessage.FAIL_READ_REQUEST));

@@ -5,8 +5,9 @@ import co.com.pragma.model.user.User;
 import co.com.pragma.model.user.exceptions.RoleNotFoundException;
 import co.com.pragma.r2dbc.entity.RoleEntity;
 import co.com.pragma.r2dbc.entity.UserEntity;
+import io.r2dbc.spi.ConnectionFactories;
+import io.r2dbc.spi.ConnectionFactory;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,9 +16,9 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.domain.Example;
 import org.springframework.data.r2dbc.config.AbstractR2dbcConfiguration;
 import org.springframework.data.r2dbc.repository.config.EnableR2dbcRepositories;
-import org.springframework.data.domain.Example;
 import org.springframework.lang.NonNull;
 import org.springframework.r2dbc.connection.init.ConnectionFactoryInitializer;
 import org.springframework.r2dbc.connection.init.ResourceDatabasePopulator;
@@ -27,9 +28,6 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.math.BigDecimal;
-
-import io.r2dbc.spi.ConnectionFactories;
-import io.r2dbc.spi.ConnectionFactory;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = UserRepositoryImplIntegrationTest.TestConfig.class)
