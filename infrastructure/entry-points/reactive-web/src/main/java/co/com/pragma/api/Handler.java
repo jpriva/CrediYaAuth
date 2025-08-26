@@ -5,7 +5,7 @@ import co.com.pragma.api.dto.UserSaveRequestDTO;
 import co.com.pragma.api.mapper.UserMapper;
 import co.com.pragma.model.logs.gateways.LoggerPort;
 import co.com.pragma.model.user.exceptions.EmailTakenException;
-import co.com.pragma.model.user.exceptions.ErrorMessage;
+import co.com.pragma.model.user.constants.ErrorMessage;
 import co.com.pragma.model.user.exceptions.UserException;
 import co.com.pragma.usecase.user.SaveUserUseCase;
 import lombok.RequiredArgsConstructor;

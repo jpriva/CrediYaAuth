@@ -1,6 +1,6 @@
 package co.com.pragma.api.dto;
 
-import co.com.pragma.model.user.exceptions.ErrorMessage;
+import co.com.pragma.model.user.constants.ErrorMessage;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

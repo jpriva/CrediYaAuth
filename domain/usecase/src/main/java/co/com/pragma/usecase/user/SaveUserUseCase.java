@@ -1,16 +1,17 @@
 package co.com.pragma.usecase.user;
 
 import co.com.pragma.model.logs.gateways.LoggerPort;
+import co.com.pragma.model.transaction.gateways.TransactionalPort;
 import co.com.pragma.model.user.Role;
 import co.com.pragma.model.user.User;
+import co.com.pragma.model.user.constants.DefaultValues;
+import co.com.pragma.model.user.constants.ErrorMessage;
+import co.com.pragma.model.user.constants.LogMessages;
 import co.com.pragma.model.user.exceptions.*;
-import co.com.pragma.model.transaction.gateways.TransactionalPort;
 import co.com.pragma.model.user.gateways.RoleRepository;
 import co.com.pragma.model.user.gateways.UserRepository;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
-
-import java.math.BigDecimal;
 
 @RequiredArgsConstructor
 public class SaveUserUseCase {
@@ -23,34 +24,34 @@ public class SaveUserUseCase {
     public Mono<User> execute(User user) {
         UserException validationError = verifyUserData(user);
         if (validationError != null) {
-            logger.error("Validation error saving user", validationError);
+            logger.error(validationError.getMessage(), validationError);
             return Mono.error(validationError);
         }
 
         user.trimFields();
         if (user.getRole() == null || user.getRole().getName() == null) {
-            user.setRole(Role.builder().name("CLIENTE").build());
+            user.setRole(Role.builder().name(DefaultValues.DEFAULT_ROLE).build());
         }
 
-        return transactionalOperation(user)
-                .doOnSuccess(savedUser -> logger.info("User saved {}", savedUser))
+        return persistenceOperation(user)
+                .doOnSuccess(savedUser -> logger.info(LogMessages.SAVED_USER + " {}", savedUser))
                 .as(transactionalPort::transactional);
     }
 
-    private Mono<User> transactionalOperation(User user) {
-        logger.info("Starting save process for user: {}", user);
+    private Mono<User> persistenceOperation(User user) {
+        logger.info(LogMessages.START_SAVING_USER_PROCESS + " {}", user);
         return roleRepository.findOne(user.getRole())
                 .switchIfEmpty(Mono.defer(() -> {
-                    logger.error("Role not found", new RoleNotFoundException());
+                    logger.error(ErrorMessage.ROL_NOT_FOUND, new RoleNotFoundException());
                     return Mono.error(new RoleNotFoundException());
                 }))
                 .flatMap(rol -> userRepository.exists(User.builder().email(user.getEmail()).build())
                         .flatMap(exists -> {
-                            if (Boolean.TRUE.equals(exists)){
-                                logger.error("Email already taken", new EmailTakenException());
+                            if (Boolean.TRUE.equals(exists)) {
+                                logger.error(ErrorMessage.EMAIL_TAKEN, new EmailTakenException());
                                 return Mono.error(new EmailTakenException());
                             }
-                            logger.info("Saving user {}", user);
+                            logger.info(LogMessages.INSERT_USER_DB + " {}", user);
                             return userRepository.save(user.toBuilder().role(rol).build());
                         })
                 );
@@ -63,19 +64,20 @@ public class SaveUserUseCase {
                 user.getBaseSalary() == null) {
             return new UserFieldException();
         }
-        if (user.getName().length() > 50 || user.getLastName().length() > 50 ||
-                user.getEmail().length() > 100 ||
-                (user.getIdNumber() != null && user.getIdNumber().length() > 50) ||
-                (user.getPhone() != null && user.getPhone().length() > 20) ||
-                (user.getAddress() != null && user.getAddress().length() > 255)
-        ){
+        if (user.getName().length() > DefaultValues.MAX_LENGTH_NAME ||
+                user.getLastName().length() > DefaultValues.MAX_LENGTH_LAST_NAME ||
+                user.getEmail().length() > DefaultValues.MAX_LENGTH_EMAIL ||
+                (user.getIdNumber() != null && user.getIdNumber().length() > DefaultValues.MAX_LENGTH_ID_NUMBER) ||
+                (user.getPhone() != null && user.getPhone().length() > DefaultValues.MAX_LENGTH_PHONE) ||
+                (user.getAddress() != null && user.getAddress().length() > DefaultValues.MAX_LENGTH_ADDRESS)
+        ) {
             return new SizeOutOfBoundsException();
         }
-        if (user.getBaseSalary().compareTo(BigDecimal.ZERO) < 0 ||
-                user.getBaseSalary().compareTo(new BigDecimal(15000000)) > 0) {
+        if (user.getBaseSalary().compareTo(DefaultValues.MIN_SALARY) < 0 ||
+                user.getBaseSalary().compareTo(DefaultValues.MAX_SALARY) > 0) {
             return new SalaryUnboundException();
         }
-        if (!user.getEmail().matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")) {
+        if (!user.getEmail().matches(DefaultValues.EMAIL_REGEX)) {
             return new EmailFormatException();
         }
         return null;
