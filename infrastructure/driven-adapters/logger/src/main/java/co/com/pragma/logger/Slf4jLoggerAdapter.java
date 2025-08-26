@@ -13,6 +13,11 @@ public class Slf4jLoggerAdapter implements LoggerPort {
     }
 
     @Override
+    public void debug(String message, Object... args) {
+        logger.debug(message, args);
+    }
+
+    @Override
     public void info(String message, Object... args) {
         logger.info(message, args);
     }
@@ -23,7 +28,7 @@ public class Slf4jLoggerAdapter implements LoggerPort {
     }
 
     @Override
-    public void error(String message, Throwable throwable) {
-        logger.error(message, throwable);
+    public void error(String message, Object... args) {
+        logger.error(message, args);
     }
 }

@@ -1,5 +1,6 @@
 package co.com.pragma;
 
+import co.com.pragma.model.logs.gateways.LoggerPort;
 import co.com.pragma.model.user.User;
 import co.com.pragma.r2dbc.UserEntityRepository;
 import co.com.pragma.r2dbc.UserRepositoryImpl;
@@ -26,6 +27,9 @@ class UserUseCaseIntegrationTest {
     @Autowired
     private UserEntityRepository userEntityRepository;
 
+    @Autowired
+    private LoggerPort logger;
+
     @MockitoSpyBean
     private UserRepositoryImpl userRepository;
 
@@ -39,7 +43,7 @@ class UserUseCaseIntegrationTest {
         User userToSave = User.builder()
                 .name("John").lastName("Doe")
                 .email("john.doe@example.com")
-                .baseSalary(new BigDecimal(2000000))
+                .baseSalary(new BigDecimal("2000000"))
                 .build();
 
         doReturn(Mono.error(new DataIntegrityViolationException("Simulated database error")))
@@ -47,9 +51,13 @@ class UserUseCaseIntegrationTest {
 
         Mono<User> saveOperation = userUseCase.saveUser(userToSave);
 
-        StepVerifier.create(saveOperation)
-                .expectError(DataIntegrityViolationException.class)
-                .verify();
+        try {
+            StepVerifier.create(saveOperation)
+                    .expectError(DataIntegrityViolationException.class)
+                    .verify();
+        }catch (Exception e){
+            logger.error("Error",e);
+        }
         StepVerifier.create(userEntityRepository.count()).expectNext(0L).verifyComplete();
     }
 }

@@ -2,6 +2,7 @@ package co.com.pragma.r2dbc;
 
 import co.com.pragma.model.user.Role;
 import co.com.pragma.model.user.User;
+import co.com.pragma.model.user.constants.DefaultValues;
 import co.com.pragma.model.user.exceptions.RoleNotFoundException;
 import co.com.pragma.r2dbc.entity.RoleEntity;
 import co.com.pragma.r2dbc.entity.UserEntity;
@@ -80,7 +81,7 @@ class UserRepositoryImplIntegrationTest {
     void setUp() {
         userEntityRepository.deleteAll().block();
 
-        savedRoleEntity = roleEntityRepository.findOne(Example.of(RoleEntity.builder().name("CLIENTE").build())).block();
+        savedRoleEntity = roleEntityRepository.findOne(Example.of(RoleEntity.builder().name(DefaultValues.DEFAULT_ROLE).build())).block();
         savedRole = Role.builder().rolId(savedRoleEntity.getRolId()).name(savedRoleEntity.getName()).description(savedRoleEntity.getDescription()).build();
     }
 
