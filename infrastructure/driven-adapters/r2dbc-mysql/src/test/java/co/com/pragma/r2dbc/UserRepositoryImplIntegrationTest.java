@@ -11,6 +11,8 @@ import io.r2dbc.spi.ConnectionFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.reactivecommons.utils.ObjectMapper;
+import org.reactivecommons.utils.ObjectMapperImp;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -31,8 +33,8 @@ import reactor.test.StepVerifier;
 import java.math.BigDecimal;
 
 @ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = UserRepositoryImplIntegrationTest.TestConfig.class)
-class UserRepositoryImplIntegrationTest {
+@ContextConfiguration(classes = UserRepositoryAdapterIntegrationTest.TestConfig.class)
+class UserRepositoryAdapterIntegrationTest {
 
     @Configuration
     @EnableR2dbcRepositories(
@@ -60,13 +62,19 @@ class UserRepositoryImplIntegrationTest {
         }
 
         @Bean
-        public UserRepositoryImpl userRepository(UserEntityRepository userEntityRepository, RoleEntityRepository roleEntityRepository) {
-            return new UserRepositoryImpl(userEntityRepository, roleEntityRepository);
+        public ObjectMapper objectMapper() {
+            return new ObjectMapperImp();
+        }
+
+
+        @Bean
+        public UserRepositoryAdapter userRepository(UserEntityRepository repository, ObjectMapper mapper, RoleEntityRepository roleEntityRepository) {
+            return new UserRepositoryAdapter(repository, mapper, roleEntityRepository);
         }
     }
 
     @Autowired
-    private UserRepositoryImpl userRepository;
+    private UserRepositoryAdapter userRepository;
 
     @Autowired
     private UserEntityRepository userEntityRepository;
