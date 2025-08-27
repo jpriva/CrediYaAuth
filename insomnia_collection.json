@@ -1,0 +1,190 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2025-08-26T12:00:00.000Z",
+  "__export_source": "gemini-code-assist",
+  "resources": [
+    {
+      "_id": "wrk_1",
+      "parentId": null,
+      "modified": 1672531200000,
+      "created": 1672531200000,
+      "name": "Crediya Auth API",
+      "description": "",
+      "scope": "collection",
+      "_type": "workspace"
+    },
+    {
+      "_id": "fld_1",
+      "parentId": "wrk_1",
+      "modified": 1672531200000,
+      "created": 1672531200000,
+      "name": "Users",
+      "description": "",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": -1672531200000,
+      "_type": "request_group"
+    },
+    {
+      "_id": "req_success",
+      "parentId": "fld_1",
+      "modified": 1672531200000,
+      "created": 1672531200000,
+      "url": "{{ _.baseUrl }}/api/v1/usuarios",
+      "name": "Create User - Success",
+      "description": "",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n\t\"name\": \"John\",\n\t\"lastName\": \"Doe\",\n\t\"email\": \"john.doe.{{ _.timestamp }}@example.com\",\n\t\"idNumber\": \"123456789\",\n\t\"rolId\": 1,\n\t\"baseSalary\": 5000000,\n\t\"phone\": \"3001234567\",\n\t\"address\": \"123 Main St\",\n\t\"birthDate\": \"1990-01-15\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -100,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "uts_success",
+      "parentId": "req_success",
+      "name": "Test Suite for Success Case",
+      "modified": 1672531200000,
+      "created": 1672531200000,
+      "code": "const response = await pm.response.get();\nconst body = await pm.response.body();\n\npm.test(\"Status code is 201 Created\", () => {\n    pm.expect(response.statusCode).to.equal(201);\n});\n\npm.test(\"Response body is a valid JSON\", () => {\n    pm.expect(body).to.be.a('object');\n});\n\npm.test(\"Response contains user ID and email\", () => {\n    pm.expect(body.userId).to.be.a('number');\n    pm.expect(body.email).to.include('@');\n});",
+      "_type": "unit_test_suite"
+    },
+    {
+      "_id": "req_conflict",
+      "parentId": "fld_1",
+      "modified": 1672531200000,
+      "created": 1672531200000,
+      "url": "{{ _.baseUrl }}/api/v1/usuarios",
+      "name": "Create User - Email Already Taken",
+      "description": "",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n\t\"name\": \"Jane\",\n\t\"lastName\": \"Doe\",\n\t\"email\": \"jane.doe@example.com\",\n\t\"idNumber\": \"987654321\",\n\t\"rolId\": 1,\n\t\"baseSalary\": 6000000\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -90,
+      "_type": "request"
+    },
+    {
+      "_id": "uts_conflict",
+      "parentId": "req_conflict",
+      "name": "Test Suite for Conflict Case",
+      "modified": 1672531200000,
+      "created": 1672531200000,
+      "code": "const response = await pm.response.get();\nconst body = await pm.response.body();\n\npm.test(\"Status code is 409 Conflict\", () => {\n    pm.expect(response.statusCode).to.equal(409);\n});\n\npm.test(\"Response body contains correct error message\", () => {\n    pm.expect(body.code).to.equal('ER-02');\n    pm.expect(body.message).to.equal('Email is already in use');\n});",
+      "_type": "unit_test_suite"
+    },
+    {
+      "_id": "req_bad_request_validation",
+      "parentId": "fld_1",
+      "modified": 1672531200000,
+      "created": 1672531200000,
+      "url": "{{ _.baseUrl }}/api/v1/usuarios",
+      "name": "Create User - Invalid Field (Blank Name)",
+      "description": "",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n\t\"name\": \"\",\n\t\"lastName\": \"Smith\",\n\t\"email\": \"test.smith@example.com\",\n\t\"idNumber\": \"111222333\",\n\t\"rolId\": 1,\n\t\"baseSalary\": 4000000\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -80,
+      "_type": "request"
+    },
+    {
+      "_id": "uts_bad_request_validation",
+      "parentId": "req_bad_request_validation",
+      "name": "Test Suite for Validation Error",
+      "modified": 1672531200000,
+      "created": 1672531200000,
+      "code": "const response = await pm.response.get();\nconst body = await pm.response.body();\n\npm.test(\"Status code is 400 Bad Request\", () => {\n    pm.expect(response.statusCode).to.equal(400);\n});\n\npm.test(\"Response body contains correct error message\", () => {\n    pm.expect(body.code).to.be.a('string');\n    pm.expect(body.message).to.include('Name can\\'t be empty');\n});",
+      "_type": "unit_test_suite"
+    },
+    {
+      "_id": "req_bad_request_format",
+      "parentId": "fld_1",
+      "modified": 1672531200000,
+      "created": 1672531200000,
+      "url": "{{ _.baseUrl }}/api/v1/usuarios",
+      "name": "Create User - Malformed JSON",
+      "description": "",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n\t\"name\": \"Tom\",\n\t\"lastName\": \"Jones\",\n\t\"email\": \"tom.jones@example.com\",\n\t\"baseSalary\": \"not-a-number\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -70,
+      "_type": "request"
+    },
+    {
+      "_id": "uts_bad_request_format",
+      "parentId": "req_bad_request_format",
+      "name": "Test Suite for Malformed Request",
+      "modified": 1672531200000,
+      "created": 1672531200000,
+      "code": "const response = await pm.response.get();\nconst body = await pm.response.body();\n\npm.test(\"Status code is 400 Bad Request\", () => {\n    pm.expect(response.statusCode).to.equal(400);\n});\n\npm.test(\"Response body contains correct error message\", () => {\n    pm.expect(body.code).to.equal('ER-05');\n    pm.expect(body.message).to.equal('Failed to read request');\n});",
+      "_type": "unit_test_suite"
+    },
+    {
+      "_id": "env_1",
+      "parentId": "wrk_1",
+      "modified": 1672531200000,
+      "created": 1672531200000,
+      "name": "Base Environment",
+      "data": {
+        "baseUrl": "http://localhost:8081",
+        "timestamp": "{{ _.now('x') }}"
+      },
+      "dataPropertyOrder": {
+        "&": [
+          "baseUrl",
+          "timestamp"
+        ]
+      },
+      "color": null,
+      "isPrivate": false,
+      "metaSortKey": 1672531200000,
+      "_type": "environment"
+    }
+  ]
+}

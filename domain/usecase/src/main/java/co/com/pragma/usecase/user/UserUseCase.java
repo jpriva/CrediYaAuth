@@ -1,0 +1,188 @@
+package co.com.pragma.usecase.user;
+
+import co.com.pragma.model.logs.gateways.LoggerPort;
+import co.com.pragma.model.transaction.gateways.TransactionalPort;
+import co.com.pragma.model.user.Role;
+import co.com.pragma.model.user.User;
+import co.com.pragma.model.user.constants.DefaultValues;
+import co.com.pragma.model.user.constants.ErrorMessage;
+import co.com.pragma.model.user.constants.LogMessages;
+import co.com.pragma.model.user.exceptions.*;
+import co.com.pragma.model.user.gateways.RoleRepository;
+import co.com.pragma.model.user.gateways.UserRepository;
+import lombok.RequiredArgsConstructor;
+import reactor.core.publisher.Mono;
+
+/**
+ * Use case for user management.
+ * Contains the main business logic for user operations.
+ */
+@RequiredArgsConstructor
+public class UserUseCase {
+
+    private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
+    private final LoggerPort logger;
+    private final TransactionalPort transactionalPort;
+
+    /**
+     * Saves a new user in the system after performing business validations.
+     * <p>
+     * This method orchestrates the entire user creation process. It first validates the input,
+     * assigns a default role if none is provided, and then executes the database operations
+     * within a single transaction to ensure data integrity.
+     *
+     * @param user The {@link User} object to be saved. It must not be null.
+     * @return A {@link Mono} that emits the saved {@link User} with its new ID upon success.
+     *         If any validation or persistence error occurs, the Mono will emit an error.
+     * @throws UserNullException if the provided user object is null.
+     * @throws UserFieldBlankException if a required field (like name, lastName, email, or baseSalary) is null or blank.
+     * @throws UserFieldSizeOutOfBoundsException if a field's length exceeds its defined maximum.
+     * @throws SalaryUnboundException if the baseSalary is outside the allowed range.
+     * @throws EmailFormatException if the email does not match the required format.
+     * @throws RoleNotFoundException if the specified role does not exist in the system.
+     * @throws EmailTakenException if the provided email is already in use by another user.
+     */
+    public Mono<User> saveUser(User user) {
+        if (user == null){
+            return Mono.error(new UserNullException());
+        }
+        user.trimFields();
+        UserException validationError = verifyUserData(user);
+        if (validationError != null) {
+            logger.error(validationError.getMessage(), validationError);
+            return Mono.error(validationError);
+        }
+        if (user.getRole() == null || user.getRole().getName() == null) {
+            user.setRole(Role.builder().name(DefaultValues.DEFAULT_ROLE).build());
+        }
+
+        return saveUserTransaction(user)
+                .doFirst(() -> logger.info(LogMessages.START_SAVING_USER_PROCESS + " for email: {}", user.getEmail()))
+                .doOnError(ex -> logger.error(ErrorMessage.ERROR_SAVING_USER + " for email: {}", user.getEmail(), ex))
+                .doOnSuccess(savedUser -> logger.info(LogMessages.SAVED_USER + " with ID: {}", savedUser.getUserId()))
+                .as(transactionalPort::transactional);
+    }
+
+    // START Private methods ***********************************************************
+
+    /**
+     * Orchestrates the sequence of database operations that must be transactional.
+     * This includes finding the role, checking for email existence, and saving the user.
+     *
+     * @param user The user to be processed.
+     * @return A {@link Mono} that emits the saved user if all operations succeed.
+     */
+    private Mono<User> saveUserTransaction(User user) {
+        return findAndValidateRole(user)
+                .flatMap(role -> checkEmail(user, role))
+                .flatMap(userRepository::save);
+    }
+    /**
+     * Finds the user's role in the repository.
+     * If the role is not found, it emits a {@link RoleNotFoundException}.
+     *
+     * @param user The user whose role is to be found.
+     * @return A {@link Mono} that emits the found {@link Role}.
+     */
+    private Mono<Role> findAndValidateRole(User user) {
+        return roleRepository.findOne(user.getRole())
+                .switchIfEmpty(Mono.defer(() -> Mono.error(new RoleNotFoundException())));
+    }
+
+    /**
+     * Checks if the user's email already exists.
+     * If it exists, it emits an {@link EmailTakenException}.
+     * If it does not exist, it prepares the user object with the validated role for saving.
+     *
+     * @param user The user object being processed.
+     * @param role The validated role to be associated with the user.
+     * @return A {@link Mono} containing the user ready to be saved.
+     */
+    private Mono<User> checkEmail(User user, Role role) {
+        return userRepository.exists(User.builder().email(user.getEmail()).build())
+                .filter(exists -> !exists)
+                .switchIfEmpty(Mono.defer(() -> Mono.error(new EmailTakenException())))
+                .flatMap(exists -> Mono.just(user.toBuilder().role(role).build()));
+    }
+
+    /**
+     * Performs a series of synchronous validations on the user object.
+     * It aggregates checks for blank fields, field bounds, and email format.
+     *
+     * @param user The user to validate.
+     * @return A {@link UserException} instance if a validation error is found, or null if the data is valid.
+     */
+    private UserException verifyUserData(User user) {
+        UserException exception = verifyUserBlankFields(user);
+        if (exception != null) return exception;
+
+        exception = verifyUserFieldsBounds(user);
+        if (exception != null) return exception;
+
+        if (!user.getEmail().matches(DefaultValues.EMAIL_REGEX)) {
+            return new EmailFormatException();
+        }
+        return null;
+    }
+
+    /**
+     * Verifies that all mandatory fields in the user object are not null or blank.
+     *
+     * @param user The user to validate.
+     * @return A {@link UserFieldBlankException} if a mandatory field is invalid, otherwise null.
+     */
+    private UserException verifyUserBlankFields(User user){
+        if (user.getName() == null || user.getName().isBlank()) {
+            return new UserFieldBlankException(DefaultValues.NAME_FIELD);
+        }
+        if (user.getLastName() == null || user.getLastName().isBlank()) {
+
+            return new UserFieldBlankException(DefaultValues.LAST_NAME_FIELD);
+        }
+        if (user.getEmail() == null || user.getEmail().isBlank()){
+            return new UserFieldBlankException(DefaultValues.EMAIL_FIELD);
+        }
+        if (user.getBaseSalary() == null) {
+            return new UserFieldBlankException(DefaultValues.SALARY_FIELD);
+        }
+        return null;
+    }
+
+    /**
+     * Verifies that the user's fields do not exceed their defined size or value bounds.
+     *
+     * @param user The user to validate.
+     * @return A {@link UserFieldSizeOutOfBoundsException} or {@link SalaryUnboundException} if a field is invalid, otherwise null.
+     */
+    private UserException verifyUserFieldsBounds(User user){
+        if (user.getName().length() > DefaultValues.MAX_LENGTH_NAME){
+            return new UserFieldSizeOutOfBoundsException(DefaultValues.NAME_FIELD);
+        }
+        if (user.getLastName().length() > DefaultValues.MAX_LENGTH_LAST_NAME){
+            return new UserFieldSizeOutOfBoundsException(DefaultValues.LAST_NAME_FIELD);
+        }
+        if (user.getEmail().length() > DefaultValues.MAX_LENGTH_EMAIL){
+            return new UserFieldSizeOutOfBoundsException(DefaultValues.EMAIL_FIELD);
+        }
+        if (user.getIdNumber() != null &&
+                user.getIdNumber().length() > DefaultValues.MAX_LENGTH_ID_NUMBER) {
+            return new UserFieldSizeOutOfBoundsException(DefaultValues.ID_NUMBER_FIELD);
+        }
+        if (user.getPhone() != null &&
+                user.getPhone().length() > DefaultValues.MAX_LENGTH_PHONE) {
+            return new UserFieldSizeOutOfBoundsException(DefaultValues.PHONE_FIELD);
+        }
+        if (user.getAddress() != null &&
+                user.getAddress().length() > DefaultValues.MAX_LENGTH_ADDRESS){
+            return new UserFieldSizeOutOfBoundsException(DefaultValues.ADDRESS_FIELD);
+        }
+        if (user.getBaseSalary().compareTo(DefaultValues.MIN_SALARY) < 0 ||
+                user.getBaseSalary().compareTo(DefaultValues.MAX_SALARY) > 0) {
+            return new SalaryUnboundException();
+        }
+        return null;
+    }
+    // END Private methods ***********************************************************
+
+}
