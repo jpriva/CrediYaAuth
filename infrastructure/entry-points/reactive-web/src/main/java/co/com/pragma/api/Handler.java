@@ -4,7 +4,6 @@ import co.com.pragma.api.dto.ErrorDTO;
 import co.com.pragma.api.dto.UserSaveRequestDTO;
 import co.com.pragma.api.mapper.UserMapper;
 import co.com.pragma.model.logs.gateways.LoggerPort;
-import co.com.pragma.model.user.exceptions.EmailTakenException;
 import co.com.pragma.model.user.constants.ErrorMessage;
 import co.com.pragma.model.user.exceptions.UserException;
 import co.com.pragma.usecase.user.UserUseCase;
@@ -32,24 +31,23 @@ public class Handler {
                         ServerResponse.status(HttpStatus.CREATED)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .bodyValue(savedUser)
-                ).onErrorResume(ServerWebInputException.class, ex -> {
-                    logger.error(ErrorMessage.FAIL_READ_REQUEST, ex);
-                    return ServerResponse.status(HttpStatus.BAD_REQUEST)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .bodyValue(new ErrorDTO(ErrorMessage.FAIL_READ_REQUEST_CODE, ErrorMessage.FAIL_READ_REQUEST));
-                }).onErrorResume(EmailTakenException.class, ex ->
-                        ServerResponse.status(HttpStatus.CONFLICT)
+                )
+                .doOnError(ex -> logger.error(ex.getMessage(), ex))
+                .onErrorResume(ServerWebInputException.class, ex ->
+                        ServerResponse.status(HttpStatus.BAD_REQUEST)
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .bodyValue(new ErrorDTO(ex.getCode(), ex.getMessage()))
+                                .bodyValue(new ErrorDTO(ErrorMessage.FAIL_READ_REQUEST_CODE, ErrorMessage.FAIL_READ_REQUEST))
                 ).onErrorResume(UserException.class, ex ->
-                        ServerResponse.badRequest()
+                        ServerResponse.status(HttpStatus.valueOf(ex.getWebStatus()))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .bodyValue(new ErrorDTO(ex.getCode(), ex.getMessage()))
-                ).onErrorResume(Exception.class, ex -> {
-                    logger.error("Unhandled error occurred.", ex);
-                    return ServerResponse.status(HttpStatus.BAD_REQUEST)
+                ).onErrorResume(Exception.class, ex ->
+                     ServerResponse.status(HttpStatus.BAD_REQUEST)
                             .contentType(MediaType.APPLICATION_JSON)
-                            .bodyValue(new ErrorDTO(ErrorMessage.UNKNOWN_CODE, "We are sorry, something went wrong. Please try again later."));
-                });
+                            .bodyValue(new ErrorDTO(
+                                    ErrorMessage.UNKNOWN_CODE,
+                                    ErrorMessage.UNKNOWN_ERROR
+                            ))
+                );
     }
 }

@@ -53,8 +53,4 @@ springdoc:
 
 logging:
   level:
-    org.springframework.r2dbc.core.DefaultDatabaseClient: DEBUG
-    org.springframework.transaction.interceptor: DEBUG
     org.springframework.transaction.reactive: DEBUG
-    org.springframework.transaction: DEBUG
-    io.r2dbc.h2: DEBUG

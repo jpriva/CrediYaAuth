@@ -2,16 +2,14 @@ package co.com.pragma.model.user.constants;
 
 public final class ErrorMessage {
 
+
     private ErrorMessage() {}
 
     public static final String USER_NOT_FOUND_CODE = "U001";
     public static final String USER_NOT_FOUND = "User not found.";
 
-    public static final String ROL_NOT_FOUND_CODE = "R001";
-    public static final String ROL_NOT_FOUND = "Rol not found.";
-
     public static final String REQUIRED_FIELDS_CODE = "U002";
-    public static final String REQUIRED_FIELDS = "All required fields must be provided.";
+    public static final String REQUIRED_FIELDS = "is a required field and must be provided.";
 
     public static final String SALARY_UNBOUND_CODE = "U003";
     public static final String SALARY_UNBOUND = "Base salary must be between 0 and $15,000,000.";
@@ -25,8 +23,24 @@ public final class ErrorMessage {
     public static final String SIZE_OUT_OF_BOUNDS_CODE = "U006";
     public static final String SIZE_OUT_OF_BOUNDS = "Size out of bounds.";
 
+    public static final String USER_NULL_CODE = "U007";
+    public static final String USER_NULL = "User is null.";
+
+    public static final String ERROR_SAVING_USER_CODE = "U008";
+    public static final String ERROR_SAVING_USER = "Error saving user.";
+
+    public static final String USER_FIELD_ERROR_CODE = "U009";
+    public static final String USER_FIELD_ERROR = "Error in user field.";
+
+    public static final String ROL_NOT_FOUND_CODE = "R001";
+    public static final String ROL_NOT_FOUND = "Rol not found.";
+
     public static final String FAIL_READ_REQUEST_CODE = "W001";
     public static final String FAIL_READ_REQUEST = "Failed to read HTTP message.";
 
+    public static final String JSON_DECODING_ERROR_CODE = "J001";
+    public static final String JSON_DECODING_ERROR = "Error decoding JSON.";
+
     public static final String UNKNOWN_CODE = "UNKNOWN";
+    public static final String UNKNOWN_ERROR = "We are sorry, something went wrong. Please try again later.";
 }
