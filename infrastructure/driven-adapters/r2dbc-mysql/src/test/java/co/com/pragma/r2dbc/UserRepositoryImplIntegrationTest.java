@@ -6,18 +6,17 @@ import co.com.pragma.model.user.constants.DefaultValues;
 import co.com.pragma.model.user.exceptions.RoleNotFoundException;
 import co.com.pragma.r2dbc.entity.RoleEntity;
 import co.com.pragma.r2dbc.entity.UserEntity;
+import co.com.pragma.r2dbc.mapper.RoleMapper;
+import co.com.pragma.r2dbc.mapper.UserMapper;
 import io.r2dbc.spi.ConnectionFactories;
 import io.r2dbc.spi.ConnectionFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.reactivecommons.utils.ObjectMapper;
-import org.reactivecommons.utils.ObjectMapperImp;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.FilterType;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Example;
 import org.springframework.data.r2dbc.config.AbstractR2dbcConfiguration;
@@ -33,17 +32,12 @@ import reactor.test.StepVerifier;
 import java.math.BigDecimal;
 
 @ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = UserRepositoryAdapterIntegrationTest.TestConfig.class)
-class UserRepositoryAdapterIntegrationTest {
+@ContextConfiguration(classes = UserEntityRepositoryAdapterIntegrationTest.TestConfig.class)
+class UserEntityRepositoryAdapterIntegrationTest {
 
     @Configuration
-    @EnableR2dbcRepositories(
-            basePackages = "co.com.pragma.r2dbc",
-            includeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = {
-                    UserEntityRepository.class,
-                    RoleEntityRepository.class
-            })
-    )
+    @EnableR2dbcRepositories(basePackages = "co.com.pragma.r2dbc")
+    @ComponentScan(basePackages = "co.com.pragma.r2dbc.mapper")
     static class TestConfig extends AbstractR2dbcConfiguration {
 
         @Override
@@ -62,19 +56,18 @@ class UserRepositoryAdapterIntegrationTest {
         }
 
         @Bean
-        public ObjectMapper objectMapper() {
-            return new ObjectMapperImp();
-        }
-
-
-        @Bean
-        public UserRepositoryAdapter userRepository(UserEntityRepository repository, ObjectMapper mapper, RoleEntityRepository roleEntityRepository) {
-            return new UserRepositoryAdapter(repository, mapper, roleEntityRepository);
+        public UserEntityRepositoryAdapter userRepositoryAdapter(
+                UserEntityRepository userEntityRepository,
+                RoleEntityRepository roleEntityRepository,
+                UserMapper userMapper,
+                RoleMapper roleMapper
+        ) {
+            return new UserEntityRepositoryAdapter(userEntityRepository, roleEntityRepository, userMapper, roleMapper);
         }
     }
 
     @Autowired
-    private UserRepositoryAdapter userRepository;
+    private UserEntityRepositoryAdapter userRepository;
 
     @Autowired
     private UserEntityRepository userEntityRepository;

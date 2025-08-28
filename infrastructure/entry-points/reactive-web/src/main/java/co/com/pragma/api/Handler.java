@@ -4,8 +4,8 @@ import co.com.pragma.api.dto.ErrorDTO;
 import co.com.pragma.api.dto.UserSaveRequestDTO;
 import co.com.pragma.api.mapper.UserMapper;
 import co.com.pragma.model.logs.gateways.LoggerPort;
-import co.com.pragma.model.user.constants.ErrorMessage;
-import co.com.pragma.model.user.exceptions.UserException;
+import co.com.pragma.usecase.user.constants.ErrorMessage;
+import co.com.pragma.usecase.user.exceptions.CustomException;
 import co.com.pragma.usecase.user.UserUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -37,7 +37,7 @@ public class Handler {
                         ServerResponse.status(HttpStatus.BAD_REQUEST)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .bodyValue(new ErrorDTO(ErrorMessage.FAIL_READ_REQUEST_CODE, ErrorMessage.FAIL_READ_REQUEST))
-                ).onErrorResume(UserException.class, ex ->
+                ).onErrorResume(CustomException.class, ex ->
                         ServerResponse.status(HttpStatus.valueOf(ex.getWebStatus()))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .bodyValue(new ErrorDTO(ex.getCode(), ex.getMessage()))

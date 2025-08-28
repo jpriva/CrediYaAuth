@@ -6,10 +6,10 @@ import co.com.pragma.api.dto.UserSaveRequestDTO;
 import co.com.pragma.model.logs.gateways.LoggerPort;
 import co.com.pragma.model.user.Role;
 import co.com.pragma.model.user.User;
-import co.com.pragma.model.user.constants.DefaultValues;
-import co.com.pragma.model.user.constants.ErrorMessage;
-import co.com.pragma.model.user.exceptions.EmailTakenException;
-import co.com.pragma.model.user.exceptions.UserFieldBlankException;
+import co.com.pragma.usecase.user.constants.DefaultValues;
+import co.com.pragma.usecase.user.constants.ErrorMessage;
+import co.com.pragma.usecase.user.exceptions.EmailTakenException;
+import co.com.pragma.usecase.user.exceptions.FieldBlankException;
 import co.com.pragma.usecase.user.UserUseCase;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -51,7 +51,7 @@ class RouterRestTest {
                 .email("john.doe@example.com")
                 .idNumber("123456789")
                 .idNumber("123456")
-                .rolName(DefaultValues.DEFAULT_ROLE)
+                .rolName(DefaultValues.DEFAULT_ROLE_NAME)
                 .baseSalary(new BigDecimal(5000000))
                 .build();
     }
@@ -66,7 +66,7 @@ class RouterRestTest {
                 .email("john.doe@example.com")
                 .idNumber("123456789")
                 .idNumber("123456")
-                .role(Role.builder().rolId(3).name(DefaultValues.DEFAULT_ROLE).description("Test Client").build())
+                .role(Role.builder().rolId(3).name(DefaultValues.DEFAULT_ROLE_NAME).description("Test Client").build())
                 .baseSalary(new BigDecimal(5000000))
                 .build();
         when(userUseCase.saveUser(any(User.class))).thenReturn(Mono.just(useCaseResponse));
@@ -81,7 +81,7 @@ class RouterRestTest {
                     Assertions.assertThat(response).isInstanceOf(UserResponseDTO.class);
                     Assertions.assertThat(response.getUserId()).isEqualTo(3);
                     Assertions.assertThat(response.getRoleId()).isEqualTo(3);
-                    Assertions.assertThat(response.getRoleName()).isEqualTo(DefaultValues.DEFAULT_ROLE);
+                    Assertions.assertThat(response.getRoleName()).isEqualTo(DefaultValues.DEFAULT_ROLE_NAME);
                 });
     }
 
@@ -98,7 +98,7 @@ class RouterRestTest {
 
     @Test
     void saveUser_shouldReturnBadRequest_whenMissingRequiredFields() {
-        when(userUseCase.saveUser(any(User.class))).thenReturn(Mono.error(new UserFieldBlankException("field")));
+        when(userUseCase.saveUser(any(User.class))).thenReturn(Mono.error(new FieldBlankException("field")));
         webTestClient.post()
                 .uri(ApiConstants.ApiPaths.USERS_PATH)
                 .accept(MediaType.APPLICATION_JSON)

@@ -1,4 +1,4 @@
-package co.com.pragma.config;
+package co.com.pragma.r2dbc.config;
 
 import co.com.pragma.model.transaction.gateways.TransactionalPort;
 import reactor.core.publisher.Flux;
