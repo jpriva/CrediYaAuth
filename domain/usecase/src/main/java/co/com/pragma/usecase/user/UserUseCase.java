@@ -1,15 +1,15 @@
 package co.com.pragma.usecase.user;
 
+import co.com.pragma.model.exceptions.*;
 import co.com.pragma.model.logs.gateways.LoggerPort;
 import co.com.pragma.model.transaction.gateways.TransactionalPort;
 import co.com.pragma.model.user.Role;
 import co.com.pragma.model.user.User;
-import co.com.pragma.usecase.user.constants.DefaultValues;
-import co.com.pragma.usecase.user.constants.ErrorMessage;
-import co.com.pragma.usecase.user.constants.LogMessages;
+import co.com.pragma.model.constants.DefaultValues;
+import co.com.pragma.model.constants.ErrorMessage;
+import co.com.pragma.model.constants.LogMessages;
 import co.com.pragma.model.user.gateways.RoleRepository;
 import co.com.pragma.model.user.gateways.UserRepository;
-import co.com.pragma.usecase.user.exceptions.*;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
 
@@ -55,7 +55,7 @@ public class UserUseCase {
             logger.error(validationError.getMessage(), validationError);
             return Mono.error(validationError);
         }
-        if (user.getRole() == null || user.getRole().getName() == null) {
+        if (user.getRole() == null || (user.getRole().getRolId() == null && user.getRole().getName() == null)) {
             user.setRole(Role.builder().name(DefaultValues.DEFAULT_ROLE_NAME).build());
         }
 

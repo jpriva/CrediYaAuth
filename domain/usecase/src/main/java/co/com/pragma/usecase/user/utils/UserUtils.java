@@ -1,10 +1,8 @@
 package co.com.pragma.usecase.user.utils;
 
+import co.com.pragma.model.exceptions.*;
 import co.com.pragma.model.user.User;
-import co.com.pragma.usecase.user.constants.DefaultValues;
-import co.com.pragma.usecase.user.exceptions.*;
-
-import java.math.RoundingMode;
+import co.com.pragma.model.constants.DefaultValues;
 
 public class UserUtils {
 

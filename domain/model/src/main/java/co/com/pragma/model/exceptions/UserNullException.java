@@ -1,6 +1,6 @@
-package co.com.pragma.usecase.user.exceptions;
+package co.com.pragma.model.exceptions;
 
-import co.com.pragma.usecase.user.constants.ErrorMessage;
+import co.com.pragma.model.constants.ErrorMessage;
 
 public class UserNullException extends CustomException {
     public UserNullException() {

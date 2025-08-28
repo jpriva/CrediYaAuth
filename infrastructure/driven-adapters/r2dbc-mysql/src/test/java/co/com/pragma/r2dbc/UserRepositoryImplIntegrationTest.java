@@ -1,13 +1,13 @@
 package co.com.pragma.r2dbc;
 
+import co.com.pragma.model.constants.DefaultValues;
+import co.com.pragma.model.exceptions.RoleNotFoundException;
 import co.com.pragma.model.user.Role;
 import co.com.pragma.model.user.User;
-import co.com.pragma.model.user.constants.DefaultValues;
-import co.com.pragma.model.user.exceptions.RoleNotFoundException;
 import co.com.pragma.r2dbc.entity.RoleEntity;
 import co.com.pragma.r2dbc.entity.UserEntity;
-import co.com.pragma.r2dbc.mapper.RoleMapper;
-import co.com.pragma.r2dbc.mapper.UserMapper;
+import co.com.pragma.r2dbc.mapper.PersistenceRoleMapper;
+import co.com.pragma.r2dbc.mapper.PersistenceUserMapper;
 import io.r2dbc.spi.ConnectionFactories;
 import io.r2dbc.spi.ConnectionFactory;
 import org.junit.jupiter.api.BeforeEach;
@@ -59,8 +59,8 @@ class UserEntityRepositoryAdapterIntegrationTest {
         public UserEntityRepositoryAdapter userRepositoryAdapter(
                 UserEntityRepository userEntityRepository,
                 RoleEntityRepository roleEntityRepository,
-                UserMapper userMapper,
-                RoleMapper roleMapper
+                PersistenceUserMapper userMapper,
+                PersistenceRoleMapper roleMapper
         ) {
             return new UserEntityRepositoryAdapter(userEntityRepository, roleEntityRepository, userMapper, roleMapper);
         }
@@ -82,7 +82,7 @@ class UserEntityRepositoryAdapterIntegrationTest {
     void setUp() {
         userEntityRepository.deleteAll().block();
 
-        savedRoleEntity = roleEntityRepository.findOne(Example.of(RoleEntity.builder().name(DefaultValues.DEFAULT_ROLE).build())).block();
+        savedRoleEntity = roleEntityRepository.findOne(Example.of(RoleEntity.builder().rolId(DefaultValues.DEFAULT_ROLE_ID).build())).block();
         savedRole = Role.builder().rolId(savedRoleEntity.getRolId()).name(savedRoleEntity.getName()).description(savedRoleEntity.getDescription()).build();
     }
 

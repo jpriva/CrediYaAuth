@@ -1,5 +1,6 @@
 package co.com.pragma.api.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,6 +14,7 @@ import java.time.LocalDate;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema(name = "User Response", description = "User Data Response.")
 public class UserResponseDTO {
 
@@ -31,14 +33,8 @@ public class UserResponseDTO {
     @Schema(description = "User's identification number", example = "123456789")
     private String idNumber;
 
-    @Schema(description = "Role's identifier", example = "3")
-    private Integer roleId;
-
-    @Schema(description = "Role's name", example = "CLIENTE")
-    private String roleName;
-
-    @Schema(description = "Role's description", example = "Cliente Solicitante")
-    private String roleDescription;
+    @Schema(description = "User's Role")
+    private RoleDTO role;
 
     @Schema(description = "User's base salary", example = "5000000")
     private BigDecimal baseSalary;

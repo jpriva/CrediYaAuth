@@ -5,10 +5,9 @@ import co.com.pragma.r2dbc.entity.UserEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-@Mapper(componentModel = "spring", uses = RoleMapper.class)
-public interface UserMapper {
-
-    @Mapping(source = "rolId", target = "role.rolId")
+@Mapper(componentModel = "spring", uses = PersistenceRoleMapper.class)
+public interface PersistenceUserMapper {
+    @Mapping(target = "role", ignore = true)
     User toDomain(UserEntity userEntity);
 
     @Mapping(source = "role.rolId", target = "rolId")

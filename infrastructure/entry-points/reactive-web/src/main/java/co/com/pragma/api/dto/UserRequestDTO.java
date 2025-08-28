@@ -1,5 +1,6 @@
 package co.com.pragma.api.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.DecimalMax;
@@ -19,8 +20,9 @@ import java.time.LocalDate;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema(name = "User Save Request", description = "User Requested Data for Save.")
-public class UserSaveRequestDTO {
+public class UserRequestDTO {
     @NotBlank(message = "Name can't be empty")
     @Size(max = 50, message = "Name must have less than 50 characters")
     @Schema(description = "User's first name", example = "John")
@@ -48,8 +50,8 @@ public class UserSaveRequestDTO {
     @Schema(description = "User's base salary", example = "5000000")
     private BigDecimal baseSalary;
 
-    @Schema(description = "Name of the role to be assigned to the user", example = "CLIENTE")
-    private String rolName;
+    @Schema(description = "User's Role")
+    private RoleDTO role;
 
     @Size(max = 20, message = "Phone must have less than 20 characters")
     @Schema(description = "User's contact phone number", example = "3001234567")

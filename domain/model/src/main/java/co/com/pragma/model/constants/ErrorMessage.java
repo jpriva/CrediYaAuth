@@ -1,4 +1,4 @@
-package co.com.pragma.usecase.user.constants;
+package co.com.pragma.model.constants;
 
 public final class ErrorMessage {
 

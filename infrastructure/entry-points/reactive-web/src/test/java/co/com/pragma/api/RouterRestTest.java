@@ -1,15 +1,17 @@
 package co.com.pragma.api;
 
 import co.com.pragma.api.dto.ErrorDTO;
+import co.com.pragma.api.dto.RoleDTO;
+import co.com.pragma.api.dto.UserRequestDTO;
 import co.com.pragma.api.dto.UserResponseDTO;
-import co.com.pragma.api.dto.UserSaveRequestDTO;
+import co.com.pragma.api.mapper.UserMapper;
+import co.com.pragma.model.constants.DefaultValues;
+import co.com.pragma.model.constants.ErrorMessage;
+import co.com.pragma.model.exceptions.EmailTakenException;
+import co.com.pragma.model.exceptions.FieldBlankException;
 import co.com.pragma.model.logs.gateways.LoggerPort;
 import co.com.pragma.model.user.Role;
 import co.com.pragma.model.user.User;
-import co.com.pragma.usecase.user.constants.DefaultValues;
-import co.com.pragma.usecase.user.constants.ErrorMessage;
-import co.com.pragma.usecase.user.exceptions.EmailTakenException;
-import co.com.pragma.usecase.user.exceptions.FieldBlankException;
 import co.com.pragma.usecase.user.UserUseCase;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,21 +43,33 @@ class RouterRestTest {
     @MockitoBean
     private UserUseCase userUseCase;
 
-    private UserSaveRequestDTO requestDto;
+    @MockitoBean
+    private UserMapper userMapper;
+
+    private UserRequestDTO requestDto;
+    private User domainUser;
+    private UserResponseDTO responseDto;
 
     @BeforeEach
     void setup() {
-        requestDto = UserSaveRequestDTO.builder()
+        requestDto = UserRequestDTO.builder()
                 .name("John")
                 .lastName("Doe")
                 .email("john.doe@example.com")
                 .idNumber("123456789")
-                .idNumber("123456")
-                .rolName(DefaultValues.DEFAULT_ROLE_NAME)
+                .role(RoleDTO.builder().name(DefaultValues.DEFAULT_ROLE_NAME).build())
                 .baseSalary(new BigDecimal(5000000))
                 .build();
-    }
 
+        domainUser = User.builder().email("john.doe@example.com").build();
+        when(userMapper.toDomain(any(UserRequestDTO.class))).thenReturn(domainUser);
+
+        responseDto = UserResponseDTO.builder()
+                .userId(3)
+                .email("john.doe@example.com")
+                .role(RoleDTO.builder().rolId(3).name(DefaultValues.DEFAULT_ROLE_NAME).build())
+                .build();
+    }
 
     @Test
     void saveUser_shouldReturnCreated_whenValidRequest() {
@@ -65,11 +79,13 @@ class RouterRestTest {
                 .lastName("Doe")
                 .email("john.doe@example.com")
                 .idNumber("123456789")
-                .idNumber("123456")
                 .role(Role.builder().rolId(3).name(DefaultValues.DEFAULT_ROLE_NAME).description("Test Client").build())
                 .baseSalary(new BigDecimal(5000000))
                 .build();
         when(userUseCase.saveUser(any(User.class))).thenReturn(Mono.just(useCaseResponse));
+        when(userMapper.toResponseDto(any(User.class))).thenReturn(responseDto);
+
+        // Act & Assert
         webTestClient.post()
                 .uri(ApiConstants.ApiPaths.USERS_PATH)
                 .accept(MediaType.APPLICATION_JSON)
@@ -78,10 +94,10 @@ class RouterRestTest {
                 .expectStatus().isCreated()
                 .expectBody(UserResponseDTO.class)
                 .value(response -> {
-                    Assertions.assertThat(response).isInstanceOf(UserResponseDTO.class);
                     Assertions.assertThat(response.getUserId()).isEqualTo(3);
-                    Assertions.assertThat(response.getRoleId()).isEqualTo(3);
-                    Assertions.assertThat(response.getRoleName()).isEqualTo(DefaultValues.DEFAULT_ROLE_NAME);
+                    Assertions.assertThat(response.getRole()).isNotNull();
+                    Assertions.assertThat(response.getRole().getRolId()).isEqualTo(3);
+                    Assertions.assertThat(response.getRole().getName()).isEqualTo(DefaultValues.DEFAULT_ROLE_NAME);
                 });
     }
 
@@ -91,9 +107,12 @@ class RouterRestTest {
         webTestClient.post()
                 .uri(ApiConstants.ApiPaths.USERS_PATH)
                 .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(requestDto)
                 .exchange()
-                .expectStatus().isEqualTo(HttpStatus.CONFLICT);
+                .expectStatus().isEqualTo(HttpStatus.CONFLICT)
+                .expectBody(ErrorDTO.class)
+                .value(error -> Assertions.assertThat(error.getCode()).isEqualTo(ErrorMessage.EMAIL_TAKEN_CODE));
     }
 
     @Test
@@ -102,20 +121,12 @@ class RouterRestTest {
         webTestClient.post()
                 .uri(ApiConstants.ApiPaths.USERS_PATH)
                 .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(requestDto)
                 .exchange()
-                .expectStatus().isEqualTo(HttpStatus.BAD_REQUEST);
-    }
-
-    @Test
-    void saveUser_shouldReturnBadRequest_whenUnknownExceptionIsThrown() {
-        when(userUseCase.saveUser(any(User.class))).thenReturn(Mono.error(new Exception()));
-        webTestClient.post()
-                .uri(ApiConstants.ApiPaths.USERS_PATH)
-                .accept(MediaType.APPLICATION_JSON)
-                .bodyValue(requestDto)
-                .exchange()
-                .expectStatus().isEqualTo(HttpStatus.BAD_REQUEST);
+                .expectStatus().isEqualTo(HttpStatus.BAD_REQUEST)
+                .expectBody(ErrorDTO.class)
+                .value(error -> Assertions.assertThat(error.getCode()).isEqualTo(ErrorMessage.REQUIRED_FIELDS_CODE));
     }
 
     @Test

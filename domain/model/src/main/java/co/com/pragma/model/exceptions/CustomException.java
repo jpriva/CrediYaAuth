@@ -1,4 +1,4 @@
-package co.com.pragma.usecase.user.exceptions;
+package co.com.pragma.model.exceptions;
 
 import lombok.Getter;
 

@@ -5,7 +5,7 @@ import co.com.pragma.r2dbc.entity.RoleEntity;
 import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")
-public interface RoleMapper {
+public interface PersistenceRoleMapper {
 
     Role toDomain(RoleEntity roleEntity);
 

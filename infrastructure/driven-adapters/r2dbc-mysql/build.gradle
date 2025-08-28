@@ -14,9 +14,6 @@ dependencies {
     testImplementation 'io.r2dbc:r2dbc-h2'
     testImplementation 'com.h2database:h2'
 
-    //Transactional
-    //implementation 'org.springframework:spring-tx'
-
     //Mapstruct
     implementation 'org.mapstruct:mapstruct:1.6.3'
     annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.3'

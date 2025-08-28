@@ -1,13 +1,13 @@
 package co.com.pragma.usecase.user;
 
+import co.com.pragma.model.exceptions.*;
 import co.com.pragma.model.logs.gateways.LoggerPort;
 import co.com.pragma.model.transaction.gateways.TransactionalPort;
 import co.com.pragma.model.user.Role;
 import co.com.pragma.model.user.User;
-import co.com.pragma.usecase.user.constants.DefaultValues;
+import co.com.pragma.model.constants.DefaultValues;
 import co.com.pragma.model.user.gateways.RoleRepository;
 import co.com.pragma.model.user.gateways.UserRepository;
-import co.com.pragma.usecase.user.exceptions.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
