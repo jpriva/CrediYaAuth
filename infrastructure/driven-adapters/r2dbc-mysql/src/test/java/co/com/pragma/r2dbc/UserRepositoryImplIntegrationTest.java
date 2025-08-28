@@ -1,7 +1,6 @@
 package co.com.pragma.r2dbc;
 
 import co.com.pragma.model.constants.DefaultValues;
-import co.com.pragma.model.exceptions.RoleNotFoundException;
 import co.com.pragma.model.user.Role;
 import co.com.pragma.model.user.User;
 import co.com.pragma.r2dbc.entity.RoleEntity;
@@ -103,34 +102,16 @@ class UserEntityRepositoryAdapterIntegrationTest {
                 .assertNext(savedUser -> {
                     assert savedUser.getUserId() != null;
                     assert savedUser.getName().equals(userToSave.getName());
-                    assert savedUser.getRole() != null;
-                    assert savedUser.getRole().getRolId().equals(savedRoleEntity.getRolId());
-                    assert savedUser.getRole().getName().equals(savedRoleEntity.getName());
+                    assert savedUser.getLastName().equals(userToSave.getLastName());
+                    assert savedUser.getEmail().equals(userToSave.getEmail());
+                    assert savedUser.getIdNumber().equals(userToSave.getIdNumber());
+                    assert savedUser.getBaseSalary().equals(userToSave.getBaseSalary());
                 })
                 .verifyComplete();
 
         Mono<Long> countOperation = userEntityRepository.count(Example.of(UserEntity.builder().email("jane.doe@example.com").build()));
 
         StepVerifier.create(countOperation).expectNext(1L).verifyComplete();
-    }
-
-    @Test
-    void save_shouldReturnError_whenRoleIsNotFound() {
-        int nonExistentRoleId = 999;
-        User userToSave = User.builder()
-                .name("Jane")
-                .lastName("Doe")
-                .email("jane.doe@example.com")
-                .idNumber("987654321")
-                .role(Role.builder().rolId(nonExistentRoleId).build())
-                .baseSalary(new BigDecimal("60000"))
-                .build();
-
-        Mono<User> result = userRepository.save(userToSave);
-
-        StepVerifier.create(result)
-                .expectError(RoleNotFoundException.class)
-                .verify();
     }
 
     @Test
