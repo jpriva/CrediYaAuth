@@ -1,4 +1,4 @@
-package co.com.pragma.api;
+package co.com.pragma.api.constants;
 
 public class ApiConstants {
 

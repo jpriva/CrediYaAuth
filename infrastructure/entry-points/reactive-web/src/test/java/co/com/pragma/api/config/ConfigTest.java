@@ -1,6 +1,6 @@
 package co.com.pragma.api.config;
 
-import co.com.pragma.api.ApiConstants;
+import co.com.pragma.api.constants.ApiConstants;
 import co.com.pragma.api.Handler;
 import co.com.pragma.api.RouterRest;
 import co.com.pragma.api.mapper.UserMapper;

@@ -1,5 +1,6 @@
 package co.com.pragma.api;
 
+import co.com.pragma.api.constants.ApiConstants;
 import co.com.pragma.api.dto.ErrorDTO;
 import co.com.pragma.api.dto.UserResponseDTO;
 import co.com.pragma.api.dto.UserRequestDTO;

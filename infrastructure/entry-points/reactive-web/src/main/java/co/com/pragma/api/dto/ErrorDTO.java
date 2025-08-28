@@ -1,6 +1,6 @@
 package co.com.pragma.api.dto;
 
-import co.com.pragma.api.ApiConstants;
+import co.com.pragma.api.constants.ApiConstants;
 import co.com.pragma.model.constants.ErrorMessage;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
