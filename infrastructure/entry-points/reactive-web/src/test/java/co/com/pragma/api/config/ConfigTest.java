@@ -1,8 +1,9 @@
 package co.com.pragma.api.config;
 
-import co.com.pragma.api.ApiConstants;
+import co.com.pragma.api.constants.ApiConstants;
 import co.com.pragma.api.Handler;
 import co.com.pragma.api.RouterRest;
+import co.com.pragma.api.mapper.UserMapper;
 import co.com.pragma.model.logs.gateways.LoggerPort;
 import co.com.pragma.usecase.user.UserUseCase;
 import org.junit.jupiter.api.Test;
@@ -26,6 +27,9 @@ class ConfigTest {
 
     @MockitoBean
     private UserUseCase userUseCase;
+
+    @MockitoBean
+    private UserMapper userMapper;
 
     @Test
     void corsConfigurationShouldAllowOrigins() {

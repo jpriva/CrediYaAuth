@@ -1,7 +1,6 @@
-package co.com.pragma.model.user.constants;
+package co.com.pragma.model.constants;
 
 public final class ErrorMessage {
-
 
     private ErrorMessage() {}
 

@@ -3,7 +3,7 @@ package co.com.pragma;
 import co.com.pragma.model.logs.gateways.LoggerPort;
 import co.com.pragma.model.user.User;
 import co.com.pragma.r2dbc.UserEntityRepository;
-import co.com.pragma.r2dbc.UserRepositoryAdapter;
+import co.com.pragma.r2dbc.UserEntityRepositoryAdapter;
 import co.com.pragma.usecase.user.UserUseCase;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,7 +31,7 @@ class UserUseCaseIntegrationTest {
     private LoggerPort logger;
 
     @MockitoSpyBean
-    private UserRepositoryAdapter userRepository;
+    private UserEntityRepositoryAdapter userRepository;
 
     @BeforeEach
     void setup() {

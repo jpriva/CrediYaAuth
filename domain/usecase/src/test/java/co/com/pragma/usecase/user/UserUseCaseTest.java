@@ -1,11 +1,11 @@
 package co.com.pragma.usecase.user;
 
+import co.com.pragma.model.exceptions.*;
 import co.com.pragma.model.logs.gateways.LoggerPort;
 import co.com.pragma.model.transaction.gateways.TransactionalPort;
 import co.com.pragma.model.user.Role;
 import co.com.pragma.model.user.User;
-import co.com.pragma.model.user.constants.DefaultValues;
-import co.com.pragma.model.user.exceptions.*;
+import co.com.pragma.model.constants.DefaultValues;
 import co.com.pragma.model.user.gateways.RoleRepository;
 import co.com.pragma.model.user.gateways.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -50,7 +50,11 @@ class UserUseCaseTest {
 
     @BeforeEach
     void setUp() {
-        clientRole = Role.builder().rolId(2).name("CLIENTE").build();
+        clientRole = Role.builder()
+                .rolId(DefaultValues.DEFAULT_ROLE_ID)
+                .name(DefaultValues.DEFAULT_ROLE_NAME)
+                .description(DefaultValues.DEFAULT_ROLE_DESCRIPTION)
+                .build();
         validUser = User.builder()
                 .name("John")
                 .lastName("Doe")
@@ -128,11 +132,11 @@ class UserUseCaseTest {
         void save_shouldReturnUserFieldBlankException_whenNameFieldIsBlankOrNull() {
             User invalidUser = validUser.name("  ").build();
             StepVerifier.create(userUseCase.saveUser(invalidUser))
-                    .expectError(UserFieldBlankException.class)
+                    .expectError(FieldBlankException.class)
                     .verify();
             User invalidUser2 = validUser.name(null).build();
             StepVerifier.create(userUseCase.saveUser(invalidUser2))
-                    .expectError(UserFieldBlankException.class)
+                    .expectError(FieldBlankException.class)
                     .verify();
         }
 
@@ -140,11 +144,11 @@ class UserUseCaseTest {
         void save_shouldReturnUserFieldBlankException_whenLastNameFieldIsBlankOrNull() {
             User invalidUser = validUser.lastName("  ").build();
             StepVerifier.create(userUseCase.saveUser(invalidUser))
-                    .expectError(UserFieldBlankException.class)
+                    .expectError(FieldBlankException.class)
                     .verify();
             User invalidUser2 = validUser.lastName(null).build();
             StepVerifier.create(userUseCase.saveUser(invalidUser2))
-                    .expectError(UserFieldBlankException.class)
+                    .expectError(FieldBlankException.class)
                     .verify();
         }
 
@@ -152,11 +156,11 @@ class UserUseCaseTest {
         void save_shouldReturnUserFieldBlankException_whenEmailFieldIsBlankOrNull() {
             User invalidUser = validUser.email("  ").build();
             StepVerifier.create(userUseCase.saveUser(invalidUser))
-                    .expectError(UserFieldBlankException.class)
+                    .expectError(FieldBlankException.class)
                     .verify();
             User invalidUser2 = validUser.email(null).build();
             StepVerifier.create(userUseCase.saveUser(invalidUser2))
-                    .expectError(UserFieldBlankException.class)
+                    .expectError(FieldBlankException.class)
                     .verify();
         }
 
@@ -164,7 +168,7 @@ class UserUseCaseTest {
         void save_shouldReturnUserFieldBlankException_whenSalaryFieldIsNull() {
             User invalidUser = validUser.baseSalary(null).build();
             StepVerifier.create(userUseCase.saveUser(invalidUser))
-                    .expectError(UserFieldBlankException.class)
+                    .expectError(FieldBlankException.class)
                     .verify();
         }
 
@@ -197,7 +201,7 @@ class UserUseCaseTest {
             String longString = "a".repeat(DefaultValues.MAX_LENGTH_NAME+1);
             User invalidUser = validUser.name(longString).build();
             StepVerifier.create(userUseCase.saveUser(invalidUser))
-                    .expectError(UserFieldSizeOutOfBoundsException.class)
+                    .expectError(FieldSizeOutOfBoundsException.class)
                     .verify();
         }
 
@@ -206,7 +210,7 @@ class UserUseCaseTest {
             String longString = "a".repeat(DefaultValues.MAX_LENGTH_LAST_NAME+1);
             User invalidUser = validUser.lastName(longString).build();
             StepVerifier.create(userUseCase.saveUser(invalidUser))
-                    .expectError(UserFieldSizeOutOfBoundsException.class)
+                    .expectError(FieldSizeOutOfBoundsException.class)
                     .verify();
         }
 
@@ -215,7 +219,7 @@ class UserUseCaseTest {
             String longString = "a".repeat(DefaultValues.MAX_LENGTH_EMAIL+1);
             User invalidUser = validUser.email(longString).build();
             StepVerifier.create(userUseCase.saveUser(invalidUser))
-                    .expectError(UserFieldSizeOutOfBoundsException.class)
+                    .expectError(FieldSizeOutOfBoundsException.class)
                     .verify();
         }
 
@@ -224,7 +228,7 @@ class UserUseCaseTest {
             String longString = "a".repeat(DefaultValues.MAX_LENGTH_ID_NUMBER+1);
             User invalidUser = validUser.idNumber(longString).build();
             StepVerifier.create(userUseCase.saveUser(invalidUser))
-                    .expectError(UserFieldSizeOutOfBoundsException.class)
+                    .expectError(FieldSizeOutOfBoundsException.class)
                     .verify();
         }
 
@@ -233,7 +237,7 @@ class UserUseCaseTest {
             String longString = "a".repeat(DefaultValues.MAX_LENGTH_PHONE+1);
             User invalidUser = validUser.phone(longString).build();
             StepVerifier.create(userUseCase.saveUser(invalidUser))
-                    .expectError(UserFieldSizeOutOfBoundsException.class)
+                    .expectError(FieldSizeOutOfBoundsException.class)
                     .verify();
         }
 
@@ -242,7 +246,7 @@ class UserUseCaseTest {
             String longString = "a".repeat(DefaultValues.MAX_LENGTH_ADDRESS+1);
             User invalidUser = validUser.address(longString).build();
             StepVerifier.create(userUseCase.saveUser(invalidUser))
-                    .expectError(UserFieldSizeOutOfBoundsException.class)
+                    .expectError(FieldSizeOutOfBoundsException.class)
                     .verify();
         }
     }

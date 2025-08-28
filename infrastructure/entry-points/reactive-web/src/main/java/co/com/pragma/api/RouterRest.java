@@ -1,8 +1,9 @@
 package co.com.pragma.api;
 
+import co.com.pragma.api.constants.ApiConstants;
 import co.com.pragma.api.dto.ErrorDTO;
 import co.com.pragma.api.dto.UserResponseDTO;
-import co.com.pragma.api.dto.UserSaveRequestDTO;
+import co.com.pragma.api.dto.UserRequestDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -32,7 +33,7 @@ public class RouterRest {
                             operationId = ApiConstants.Operations.SAVE_USER_OPERATION_ID,
                             requestBody = @RequestBody(
                                     content = @Content(
-                                            schema = @Schema(implementation = UserSaveRequestDTO.class)
+                                            schema = @Schema(implementation = UserRequestDTO.class)
                                     ),
                                     required = true,
                                     description = ApiConstants.Operations.SAVE_USER_REQUEST_BODY_DESC

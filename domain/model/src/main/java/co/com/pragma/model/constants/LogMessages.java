@@ -1,4 +1,4 @@
-package co.com.pragma.model.user.constants;
+package co.com.pragma.model.constants;
 
 public class LogMessages {
     private LogMessages(){}

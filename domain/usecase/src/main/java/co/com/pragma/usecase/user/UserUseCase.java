@@ -1,17 +1,19 @@
 package co.com.pragma.usecase.user;
 
+import co.com.pragma.model.exceptions.*;
 import co.com.pragma.model.logs.gateways.LoggerPort;
 import co.com.pragma.model.transaction.gateways.TransactionalPort;
 import co.com.pragma.model.user.Role;
 import co.com.pragma.model.user.User;
-import co.com.pragma.model.user.constants.DefaultValues;
-import co.com.pragma.model.user.constants.ErrorMessage;
-import co.com.pragma.model.user.constants.LogMessages;
-import co.com.pragma.model.user.exceptions.*;
+import co.com.pragma.model.constants.DefaultValues;
+import co.com.pragma.model.constants.ErrorMessage;
+import co.com.pragma.model.constants.LogMessages;
 import co.com.pragma.model.user.gateways.RoleRepository;
 import co.com.pragma.model.user.gateways.UserRepository;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
+
+import static co.com.pragma.usecase.user.utils.UserUtils.verifyUserData;
 
 /**
  * Use case for user management.
@@ -36,8 +38,8 @@ public class UserUseCase {
      * @return A {@link Mono} that emits the saved {@link User} with its new ID upon success.
      *         If any validation or persistence error occurs, the Mono will emit an error.
      * @throws UserNullException if the provided user object is null.
-     * @throws UserFieldBlankException if a required field (like name, lastName, email, or baseSalary) is null or blank.
-     * @throws UserFieldSizeOutOfBoundsException if a field's length exceeds its defined maximum.
+     * @throws FieldBlankException if a required field (like name, lastName, email, or baseSalary) is null or blank.
+     * @throws FieldSizeOutOfBoundsException if a field's length exceeds its defined maximum.
      * @throws SalaryUnboundException if the baseSalary is outside the allowed range.
      * @throws EmailFormatException if the email does not match the required format.
      * @throws RoleNotFoundException if the specified role does not exist in the system.
@@ -48,13 +50,13 @@ public class UserUseCase {
             return Mono.error(new UserNullException());
         }
         user.trimFields();
-        UserException validationError = verifyUserData(user);
+        CustomException validationError = verifyUserData(user);
         if (validationError != null) {
             logger.error(validationError.getMessage(), validationError);
             return Mono.error(validationError);
         }
-        if (user.getRole() == null || user.getRole().getName() == null) {
-            user.setRole(Role.builder().name(DefaultValues.DEFAULT_ROLE).build());
+        if (user.getRole() == null || (user.getRole().getRolId() == null && user.getRole().getName() == null)) {
+            user.setRole(Role.builder().name(DefaultValues.DEFAULT_ROLE_NAME).build());
         }
 
         return saveUserTransaction(user)
@@ -106,83 +108,6 @@ public class UserUseCase {
                 .flatMap(exists -> Mono.just(user.toBuilder().role(role).build()));
     }
 
-    /**
-     * Performs a series of synchronous validations on the user object.
-     * It aggregates checks for blank fields, field bounds, and email format.
-     *
-     * @param user The user to validate.
-     * @return A {@link UserException} instance if a validation error is found, or null if the data is valid.
-     */
-    private UserException verifyUserData(User user) {
-        UserException exception = verifyUserBlankFields(user);
-        if (exception != null) return exception;
-
-        exception = verifyUserFieldsBounds(user);
-        if (exception != null) return exception;
-
-        if (!user.getEmail().matches(DefaultValues.EMAIL_REGEX)) {
-            return new EmailFormatException();
-        }
-        return null;
-    }
-
-    /**
-     * Verifies that all mandatory fields in the user object are not null or blank.
-     *
-     * @param user The user to validate.
-     * @return A {@link UserFieldBlankException} if a mandatory field is invalid, otherwise null.
-     */
-    private UserException verifyUserBlankFields(User user){
-        if (user.getName() == null || user.getName().isBlank()) {
-            return new UserFieldBlankException(DefaultValues.NAME_FIELD);
-        }
-        if (user.getLastName() == null || user.getLastName().isBlank()) {
-
-            return new UserFieldBlankException(DefaultValues.LAST_NAME_FIELD);
-        }
-        if (user.getEmail() == null || user.getEmail().isBlank()){
-            return new UserFieldBlankException(DefaultValues.EMAIL_FIELD);
-        }
-        if (user.getBaseSalary() == null) {
-            return new UserFieldBlankException(DefaultValues.SALARY_FIELD);
-        }
-        return null;
-    }
-
-    /**
-     * Verifies that the user's fields do not exceed their defined size or value bounds.
-     *
-     * @param user The user to validate.
-     * @return A {@link UserFieldSizeOutOfBoundsException} or {@link SalaryUnboundException} if a field is invalid, otherwise null.
-     */
-    private UserException verifyUserFieldsBounds(User user){
-        if (user.getName().length() > DefaultValues.MAX_LENGTH_NAME){
-            return new UserFieldSizeOutOfBoundsException(DefaultValues.NAME_FIELD);
-        }
-        if (user.getLastName().length() > DefaultValues.MAX_LENGTH_LAST_NAME){
-            return new UserFieldSizeOutOfBoundsException(DefaultValues.LAST_NAME_FIELD);
-        }
-        if (user.getEmail().length() > DefaultValues.MAX_LENGTH_EMAIL){
-            return new UserFieldSizeOutOfBoundsException(DefaultValues.EMAIL_FIELD);
-        }
-        if (user.getIdNumber() != null &&
-                user.getIdNumber().length() > DefaultValues.MAX_LENGTH_ID_NUMBER) {
-            return new UserFieldSizeOutOfBoundsException(DefaultValues.ID_NUMBER_FIELD);
-        }
-        if (user.getPhone() != null &&
-                user.getPhone().length() > DefaultValues.MAX_LENGTH_PHONE) {
-            return new UserFieldSizeOutOfBoundsException(DefaultValues.PHONE_FIELD);
-        }
-        if (user.getAddress() != null &&
-                user.getAddress().length() > DefaultValues.MAX_LENGTH_ADDRESS){
-            return new UserFieldSizeOutOfBoundsException(DefaultValues.ADDRESS_FIELD);
-        }
-        if (user.getBaseSalary().compareTo(DefaultValues.MIN_SALARY) < 0 ||
-                user.getBaseSalary().compareTo(DefaultValues.MAX_SALARY) > 0) {
-            return new SalaryUnboundException();
-        }
-        return null;
-    }
     // END Private methods ***********************************************************
 
 }

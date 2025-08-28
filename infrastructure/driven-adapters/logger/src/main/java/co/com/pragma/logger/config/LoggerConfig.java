@@ -1,4 +1,4 @@
-package co.com.pragma.config;
+package co.com.pragma.logger.config;
 
 import co.com.pragma.logger.Slf4jLoggerAdapter;
 import co.com.pragma.model.logs.gateways.LoggerPort;
