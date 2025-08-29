@@ -1,12 +1,11 @@
 package co.com.pragma.r2dbc;
 
-import co.com.pragma.model.user.Role;
-import co.com.pragma.model.user.gateways.RoleRepository;
+import co.com.pragma.model.role.Role;
+import co.com.pragma.model.role.gateways.RoleRepository;
 import co.com.pragma.r2dbc.mapper.PersistenceRoleMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Repository;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Repository

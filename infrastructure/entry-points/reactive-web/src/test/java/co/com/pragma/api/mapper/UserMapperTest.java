@@ -3,7 +3,7 @@ package co.com.pragma.api.mapper;
 import co.com.pragma.api.dto.RoleDTO;
 import co.com.pragma.api.dto.UserRequestDTO;
 import co.com.pragma.api.dto.UserResponseDTO;
-import co.com.pragma.model.user.Role;
+import co.com.pragma.model.role.Role;
 import co.com.pragma.model.user.User;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

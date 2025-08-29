@@ -11,7 +11,7 @@ import co.com.pragma.model.constants.ErrorMessage;
 import co.com.pragma.model.exceptions.EmailTakenException;
 import co.com.pragma.model.exceptions.FieldBlankException;
 import co.com.pragma.model.logs.gateways.LoggerPort;
-import co.com.pragma.model.user.Role;
+import co.com.pragma.model.role.Role;
 import co.com.pragma.model.user.User;
 import co.com.pragma.usecase.user.UserUseCase;
 import org.assertj.core.api.Assertions;

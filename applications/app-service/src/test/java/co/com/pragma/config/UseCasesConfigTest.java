@@ -2,7 +2,7 @@ package co.com.pragma.config;
 
 import co.com.pragma.model.logs.gateways.LoggerPort;
 import co.com.pragma.model.transaction.gateways.TransactionalPort;
-import co.com.pragma.model.user.gateways.RoleRepository;
+import co.com.pragma.model.role.gateways.RoleRepository;
 import co.com.pragma.model.user.gateways.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
