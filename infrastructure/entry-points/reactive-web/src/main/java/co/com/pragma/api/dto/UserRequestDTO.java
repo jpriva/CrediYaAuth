@@ -1,5 +1,6 @@
 package co.com.pragma.api.dto;
 
+import co.com.pragma.api.constants.ApiConstants;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
@@ -23,42 +24,42 @@ import java.time.LocalDate;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema(name = "User Save Request", description = "User Requested Data for Save.")
 public class UserRequestDTO {
-    @NotBlank(message = "Name can't be empty")
-    @Size(max = 50, message = "Name must have less than 50 characters")
-    @Schema(description = "User's first name", example = "John")
+    @NotBlank(message = ApiConstants.ValidationMessages.NAME_NOT_BLANK)
+    @Size(max = 50, message = ApiConstants.ValidationMessages.NAME_SIZE)
+    @Schema(description = ApiConstants.User.DESCRIPTION_NAME, example = ApiConstants.User.EXAMPLE_NAME)
     private String name;
 
-    @NotBlank(message = "Last name can't be empty")
-    @Size(max = 50, message = "Last name must have less than 50 characters")
-    @Schema(description = "User's last name", example = "Doe")
+    @NotBlank(message = ApiConstants.ValidationMessages.LAST_NAME_NOT_BLANK)
+    @Size(max = 50, message = ApiConstants.ValidationMessages.LAST_NAME_SIZE)
+    @Schema(description = ApiConstants.User.DESCRIPTION_LAST_NAME, example = ApiConstants.User.EXAMPLE_LAST_NAME)
     private String lastName;
 
-    @NotBlank(message = "Email can't be empty")
-    @Email(message = "Email should be valid")
-    @Size(max = 100, message = "Email must have less than 100 characters")
-    @Schema(description = "User's unique email address", example = "john.doe@example.com")
+    @NotBlank(message = ApiConstants.ValidationMessages.EMAIL_NOT_BLANK)
+    @Email(message = ApiConstants.ValidationMessages.EMAIL_VALID)
+    @Size(max = 100, message = ApiConstants.ValidationMessages.EMAIL_SIZE)
+    @Schema(description = ApiConstants.User.DESCRIPTION_EMAIL, example = ApiConstants.User.EXAMPLE_EMAIL)
     private String email;
 
-    @Size(max = 50, message = "Id Number must have less than 50 characters")
-    @Schema(description = "User's identification number", example = "123456789")
+    @Size(max = 50, message = ApiConstants.ValidationMessages.ID_NUMBER_SIZE)
+    @Schema(description = ApiConstants.User.DESCRIPTION_ID_NUMBER, example = ApiConstants.User.EXAMPLE_ID_NUMBER)
     private String idNumber;
 
 
-    @NotNull(message = "Base Salary can't be empty")
-    @DecimalMin(value = "1.00", message = "Base Salary must be at least 1")
-    @DecimalMax(value = "15000000.00", message = "Base Salary must be less than 15,000,000")
-    @Schema(description = "User's base salary", example = "5000000")
+    @NotNull(message = ApiConstants.ValidationMessages.SALARY_NOT_NULL)
+    @DecimalMin(value = "1.00", message = ApiConstants.ValidationMessages.SALARY_MIN)
+    @DecimalMax(value = "15000000.00", message = ApiConstants.ValidationMessages.SALARY_MAX)
+    @Schema(description = ApiConstants.User.DESCRIPTION_BASE_SALARY, example = ApiConstants.User.EXAMPLE_BASE_SALARY)
     private BigDecimal baseSalary;
 
-    @Schema(description = "User's Role")
-    private RoleDTO role;
+    @Schema(description = ApiConstants.Role.DESCRIPTION_ROLE_ID, example = ApiConstants.Role.EXAMPLE_ROLE_ID)
+    private Integer rolId;
 
-    @Size(max = 20, message = "Phone must have less than 20 characters")
-    @Schema(description = "User's contact phone number", example = "3001234567")
+    @Size(max = 20, message = ApiConstants.ValidationMessages.PHONE_SIZE)
+    @Schema(description = ApiConstants.User.DESCRIPTION_PHONE, example = ApiConstants.User.EXAMPLE_PHONE)
     private String phone;
-    @Size(max = 255, message = "Address must have less than 255 characters")
-    @Schema(description = "User's home address", example = "Main St 123, Anytown")
+    @Size(max = 255, message = ApiConstants.ValidationMessages.ADDRESS_SIZE)
+    @Schema(description = ApiConstants.User.DESCRIPTION_ADDRESS, example = ApiConstants.User.EXAMPLE_ADDRESS)
     private String address;
-    @Schema(description = "User's date of birth", example = "1990-01-15")
+    @Schema(description = ApiConstants.User.DESCRIPTION_BIRTH_DATE, example = ApiConstants.User.EXAMPLE_BIRTH_DATE)
     private LocalDate birthDate;
 }

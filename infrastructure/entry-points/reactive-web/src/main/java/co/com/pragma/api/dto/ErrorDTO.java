@@ -20,15 +20,15 @@ import java.time.Instant;
 public class ErrorDTO {
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", timezone = "UTC")
-    @Schema(description = "Timestamp", example = "2025-01-01T00:00:00.000Z")
+    @Schema(description = ApiConstants.Error.DESCRIPTION_TIMESTAMP, example = "2025-01-01T00:00:00.000Z")
     private Instant timestamp;
 
-    @Schema(description = "Error Path", example = ApiConstants.ApiPaths.USERS_PATH)
+    @Schema(description = ApiConstants.Error.DESCRIPTION_PATH, example = ApiConstants.ApiPaths.USERS_PATH)
     private String path;
 
-    @Schema(description = "Error Code", example = ErrorMessage.EMAIL_FORMAT_CODE)
+    @Schema(description = ApiConstants.Error.DESCRIPTION_CODE, example = ErrorMessage.EMAIL_FORMAT_CODE)
     private String code;
 
-    @Schema(description = "Error Message", example = ErrorMessage.EMAIL_FORMAT)
+    @Schema(description = ApiConstants.Error.DESCRIPTION_MESSAGE, example = ErrorMessage.EMAIL_FORMAT)
     private String message;
 }

@@ -1,5 +1,6 @@
 package co.com.pragma.api.dto;
 
+import co.com.pragma.api.constants.ApiConstants;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
@@ -12,10 +13,10 @@ import lombok.*;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema(name = "Role", description = "Role Data.")
 public class RoleDTO {
-    @Schema(description = "Role's identifier", example = "3")
+    @Schema(description = ApiConstants.Role.DESCRIPTION_ROLE_ID, example = ApiConstants.Role.EXAMPLE_ROLE_ID)
     private Integer rolId;
-    @Schema(description = "Role's name", example = "CLIENTE")
+    @Schema(description = ApiConstants.Role.DESCRIPTION_ROLE_NAME, example = ApiConstants.Role.EXAMPLE_ROLE_NAME)
     private String name;
-    @Schema(description = "Role's description", example = "Cliente Solicitante")
+    @Schema(description = ApiConstants.Role.DESCRIPTION_ROLE_DESCRIPTION, example = ApiConstants.Role.EXAMPLE_ROLE_DESCRIPTION)
     private String description;
 }

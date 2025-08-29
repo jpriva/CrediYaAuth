@@ -10,7 +10,6 @@ import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Mono;
 
 
-@SuppressWarnings("java:S2209")
 @Repository
 @RequiredArgsConstructor
 public class UserEntityRepositoryAdapter implements UserRepository {
