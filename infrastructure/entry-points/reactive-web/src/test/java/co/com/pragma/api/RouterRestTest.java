@@ -5,6 +5,7 @@ import co.com.pragma.api.dto.ErrorDTO;
 import co.com.pragma.api.dto.RoleDTO;
 import co.com.pragma.api.dto.UserRequestDTO;
 import co.com.pragma.api.dto.UserResponseDTO;
+import co.com.pragma.api.exception.handler.GlobalExceptionHandler;
 import co.com.pragma.api.mapper.UserMapper;
 import co.com.pragma.model.constants.DefaultValues;
 import co.com.pragma.model.constants.ErrorMessage;
@@ -31,7 +32,7 @@ import java.math.BigDecimal;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-@ContextConfiguration(classes = {RouterRest.class, Handler.class})
+@ContextConfiguration(classes = {RouterRest.class, Handler.class, GlobalExceptionHandler.class})
 @WebFluxTest
 class RouterRestTest {
 

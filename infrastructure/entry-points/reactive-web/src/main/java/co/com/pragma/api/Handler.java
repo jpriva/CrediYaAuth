@@ -2,7 +2,6 @@ package co.com.pragma.api;
 
 import co.com.pragma.api.dto.UserRequestDTO;
 import co.com.pragma.api.mapper.UserMapper;
-import co.com.pragma.model.logs.gateways.LoggerPort;
 import co.com.pragma.usecase.user.UserUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -16,7 +15,6 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class Handler {
     private final UserUseCase userUseCase;
-    private final LoggerPort logger;
     private final UserMapper userMapper;
 
     public Mono<ServerResponse> listenPOSTSaveUserUseCase(ServerRequest serverRequest) {
