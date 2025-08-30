@@ -40,6 +40,7 @@ public class UserRequestDTO {
     @Schema(description = ApiConstants.User.DESCRIPTION_EMAIL, example = ApiConstants.User.EXAMPLE_EMAIL)
     private String email;
 
+    @NotBlank(message = ApiConstants.ValidationMessages.ID_NUMBER_NOT_BLANK)
     @Size(max = 50, message = ApiConstants.ValidationMessages.ID_NUMBER_SIZE)
     @Schema(description = ApiConstants.User.DESCRIPTION_ID_NUMBER, example = ApiConstants.User.EXAMPLE_ID_NUMBER)
     private String idNumber;
