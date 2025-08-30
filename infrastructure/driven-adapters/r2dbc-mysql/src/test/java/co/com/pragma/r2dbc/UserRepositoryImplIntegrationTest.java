@@ -142,4 +142,5 @@ class UserEntityRepositoryAdapterIntegrationTest {
         StepVerifier.create(result)
                 .expectNext(false).verifyComplete();
     }
+
 }

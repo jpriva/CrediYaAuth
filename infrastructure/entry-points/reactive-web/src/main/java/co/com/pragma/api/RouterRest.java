@@ -17,6 +17,8 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.RouterFunctions;
+import static org.springframework.web.reactive.function.server.RequestPredicates.POST;
+import static org.springframework.web.reactive.function.server.RequestPredicates.accept;
 import org.springframework.web.reactive.function.server.ServerResponse;
 
 @Configuration
@@ -59,8 +61,9 @@ public class RouterRest {
             )
     })
     public RouterFunction<ServerResponse> routerFunction(Handler handler) {
-        return RouterFunctions.route()
-                .POST(ApiConstants.ApiPaths.USERS_PATH, handler::listenPOSTSaveUserUseCase)
-                .build();
+        return RouterFunctions.route(
+                POST(ApiConstants.ApiPaths.USERS_PATH).and(accept(MediaType.APPLICATION_JSON)),
+                handler::listenPOSTSaveUserUseCase
+        );
     }
 }

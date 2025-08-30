@@ -8,4 +8,6 @@ public class LogMessages {
     public static final String INSERT_USER_DB = "Inserting user in database";
 
     public static final String SAVED_USER = "User saved successfully";
+
+    public static final String GLOBAL_EXCEPTION_HANDLER_ERROR = "An error occurred for request [{}]:";
 }

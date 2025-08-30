@@ -12,7 +12,7 @@ import java.time.Instant;
 
 @Getter
 @Setter
-@Builder
+@Builder(toBuilder = true)
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
