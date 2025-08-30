@@ -56,6 +56,7 @@ public class UserUtils {
         return ValidationUtils.validateCondition(user.getName() != null && !user.getName().isBlank(), () -> new FieldBlankException(DefaultValues.NAME_FIELD))
                 .then(ValidationUtils.validateCondition(user.getLastName() != null && !user.getLastName().isBlank(), () -> new FieldBlankException(DefaultValues.LAST_NAME_FIELD)))
                 .then(ValidationUtils.validateCondition(user.getEmail() != null && !user.getEmail().isBlank(), () -> new FieldBlankException(DefaultValues.EMAIL_FIELD)))
+                .then(ValidationUtils.validateCondition(user.getIdNumber() != null && !user.getIdNumber().isBlank(), () -> new FieldBlankException(DefaultValues.ID_NUMBER_FIELD)))
                 .then(ValidationUtils.validateCondition(user.getBaseSalary() != null, () -> new FieldBlankException(DefaultValues.SALARY_FIELD)));
     }
 
@@ -69,7 +70,7 @@ public class UserUtils {
         return ValidationUtils.validateCondition(user.getName().length() <= DefaultValues.MAX_LENGTH_NAME, () -> new FieldSizeOutOfBoundsException(DefaultValues.NAME_FIELD))
                 .then(ValidationUtils.validateCondition(user.getLastName().length() <= DefaultValues.MAX_LENGTH_LAST_NAME, () -> new FieldSizeOutOfBoundsException(DefaultValues.LAST_NAME_FIELD)))
                 .then(ValidationUtils.validateCondition(user.getEmail().length() <= DefaultValues.MAX_LENGTH_EMAIL, () -> new FieldSizeOutOfBoundsException(DefaultValues.EMAIL_FIELD)))
-                .then(ValidationUtils.validateCondition(user.getIdNumber() == null || user.getIdNumber().length() <= DefaultValues.MAX_LENGTH_ID_NUMBER, () -> new FieldSizeOutOfBoundsException(DefaultValues.ID_NUMBER_FIELD)))
+                .then(ValidationUtils.validateCondition(user.getIdNumber().length() <= DefaultValues.MAX_LENGTH_ID_NUMBER, () -> new FieldSizeOutOfBoundsException(DefaultValues.ID_NUMBER_FIELD)))
                 .then(ValidationUtils.validateCondition(user.getPhone() == null || user.getPhone().length() <= DefaultValues.MAX_LENGTH_PHONE, () -> new FieldSizeOutOfBoundsException(DefaultValues.PHONE_FIELD)))
                 .then(ValidationUtils.validateCondition(user.getAddress() == null || user.getAddress().length() <= DefaultValues.MAX_LENGTH_ADDRESS, () -> new FieldSizeOutOfBoundsException(DefaultValues.ADDRESS_FIELD)))
                 .then(ValidationUtils.validateCondition(user.getBaseSalary().compareTo(DefaultValues.MIN_SALARY) >= 0, SalaryUnboundException::new))

@@ -19,16 +19,19 @@ public final class ErrorMessage {
     public static final String EMAIL_TAKEN_CODE = "U005";
     public static final String EMAIL_TAKEN = "Email is already taken.";
 
-    public static final String SIZE_OUT_OF_BOUNDS_CODE = "U006";
+    public static final String ID_NUMBER_TAKEN_CODE = "U006";
+    public static final String ID_NUMBER_TAKEN = "Id number is already taken.";
+
+    public static final String SIZE_OUT_OF_BOUNDS_CODE = "U007";
     public static final String SIZE_OUT_OF_BOUNDS = "Size out of bounds.";
 
-    public static final String USER_NULL_CODE = "U007";
+    public static final String USER_NULL_CODE = "U008";
     public static final String USER_NULL = "User is null.";
 
-    public static final String ERROR_SAVING_USER_CODE = "U008";
+    public static final String ERROR_SAVING_USER_CODE = "U009";
     public static final String ERROR_SAVING_USER = "Error saving user.";
 
-    public static final String USER_FIELD_ERROR_CODE = "U009";
+    public static final String USER_FIELD_ERROR_CODE = "U010";
     public static final String USER_FIELD_ERROR = "Error in user field.";
 
     public static final String ROL_NOT_FOUND_CODE = "R001";

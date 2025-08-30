@@ -43,7 +43,7 @@ class UserUseCaseTest {
     private LoggerPort logger;
 
     @Mock
-    private TransactionalPort operator;
+    private TransactionalPort transactionalPort;
 
     @InjectMocks
     private UserUseCase userUseCase;
@@ -68,17 +68,21 @@ class UserUseCaseTest {
                 .address("123 Main St")
                 .birthDate(LocalDate.now());
 
-        lenient().when(operator.transactional(any(Mono.class))).then(returnsFirstArg());
+        lenient().when(transactionalPort.transactional(any(Mono.class))).then(returnsFirstArg());
     }
 
     @Test
+    @DisplayName("should save a user when all data is valid and a role is provided")
     void save_shouldSaveUser_whenDataIsValidAndRolIsProvided() {
 
         User userToSave = validUser.role(clientRole).build();
         User savedUser = userToSave.toBuilder().userId(1).build();
 
         when(roleRepository.findOne(clientRole)).thenReturn(Mono.just(clientRole));
-        when(userRepository.exists(any(User.class))).thenReturn(Mono.just(false));
+        when(userRepository.exists(argThat(u -> u != null && u.getEmail() != null && u.getEmail().equals(userToSave.getEmail()))))
+                .thenReturn(Mono.just(false));
+        when(userRepository.exists(argThat(u -> u != null && u.getIdNumber() != null && u.getIdNumber().equals(userToSave.getIdNumber()))))
+                .thenReturn(Mono.just(false));
         when(userRepository.save(any(User.class))).thenReturn(Mono.just(savedUser));
 
         StepVerifier.create(userUseCase.saveUser(userToSave))
@@ -87,14 +91,17 @@ class UserUseCaseTest {
     }
 
     @Test
+    @DisplayName("should save a user with default role when role is not provided")
     void save_shouldSaveUserWithDefaultRol_whenRolIsNotProvided() {
 
         User userWithoutRol = validUser.role(null).build();
-
         User savedUser = userWithoutRol.toBuilder().userId(1).role(clientRole).build();
 
         when(roleRepository.findOne(any(Role.class))).thenReturn(Mono.just(clientRole));
-        when(userRepository.exists(any(User.class))).thenReturn(Mono.just(false));
+        when(userRepository.exists(argThat(u -> u != null && u.getEmail() != null && u.getEmail().equals(userWithoutRol.getEmail()))))
+                .thenReturn(Mono.just(false));
+        when(userRepository.exists(argThat(u -> u != null && u.getIdNumber() != null && u.getIdNumber().equals(userWithoutRol.getIdNumber()))))
+                .thenReturn(Mono.just(false));
         when(userRepository.save(any(User.class))).thenReturn(Mono.just(savedUser));
 
         StepVerifier.create(userUseCase.saveUser(userWithoutRol))
@@ -103,15 +110,18 @@ class UserUseCaseTest {
     }
 
     @Test
+    @DisplayName("should save a user with default role when role name is null")
     void save_shouldSaveUserWithDefaultRol_whenRolNameIsNull() {
 
         User userWithEmptyRol = validUser.role(Role.builder().name(null).build()).build();
-
         User userWithClientRol = userWithEmptyRol.toBuilder().role(clientRole).build();
         User savedUser = userWithClientRol.toBuilder().userId(1).build();
 
         when(roleRepository.findOne(any(Role.class))).thenReturn(Mono.just(clientRole));
-        when(userRepository.exists(any(User.class))).thenReturn(Mono.just(false));
+        when(userRepository.exists(argThat(u -> u != null && u.getEmail() != null && u.getEmail().equals(userWithEmptyRol.getEmail()))))
+                .thenReturn(Mono.just(false));
+        when(userRepository.exists(argThat(u -> u != null && u.getIdNumber() != null && u.getIdNumber().equals(userWithEmptyRol.getIdNumber()))))
+                .thenReturn(Mono.just(false));
         when(userRepository.save(any(User.class))).thenReturn(Mono.just(savedUser));
 
 
@@ -161,6 +171,16 @@ class UserUseCaseTest {
         @DisplayName("saveUser should return FieldBlankException for invalid email")
         void save_shouldReturnUserFieldBlankException_whenEmailFieldIsInvalid(String invalidEmail) {
             User invalidUser = validUser.email(invalidEmail).build();
+            StepVerifier.create(userUseCase.saveUser(invalidUser))
+                    .expectError(FieldBlankException.class)
+                    .verify();
+        }
+
+        @ParameterizedTest(name = "when idNumber is \"{0}\"")
+        @MethodSource("invalidStrings")
+        @DisplayName("saveUser should return FieldBlankException for invalid idNumber")
+        void save_shouldReturnUserFieldBlankException_whenIdNumberFieldIsInvalid(String invalidIdNumber) {
+            User invalidUser = validUser.idNumber(invalidIdNumber).build();
             StepVerifier.create(userUseCase.saveUser(invalidUser))
                     .expectError(FieldBlankException.class)
                     .verify();
@@ -256,12 +276,12 @@ class UserUseCaseTest {
     }
 
     @Nested
-    @DisplayName("Repository Failure Tests")
+    @DisplayName("Repository Interaction Failure Tests")
     class RepositoryFailureTests {
 
         @Test
-        void save_shouldReturnRolNotFoundException_whenRolDoesNotExist() {
-
+        @DisplayName("should return RoleNotFoundException when the role does not exist")
+        void save_shouldReturnRoleNotFoundException_whenRoleDoesNotExist() {
             User userToSave = validUser.role(clientRole).build();
             when(roleRepository.findOne(clientRole)).thenReturn(Mono.empty());
 
@@ -271,15 +291,42 @@ class UserUseCaseTest {
         }
 
         @Test
+        @DisplayName("should return EmailTakenException when the email already exists")
         void save_shouldReturnEmailTakenException_whenEmailAlreadyExists() {
-
             User userToSave = validUser.role(clientRole).build();
+
             when(roleRepository.findOne(clientRole)).thenReturn(Mono.just(clientRole));
-            when(userRepository.exists(any(User.class))).thenReturn(Mono.just(true));
+            when(userRepository.exists(argThat(u -> u != null && u.getEmail() != null && u.getEmail().equals(userToSave.getEmail()))))
+                    .thenReturn(Mono.just(true));
+            when(userRepository.exists(argThat(u -> u != null && u.getIdNumber() != null && u.getIdNumber().equals(userToSave.getIdNumber()))))
+                    .thenReturn(Mono.just(false));
 
             StepVerifier.create(userUseCase.saveUser(userToSave))
                     .expectError(EmailTakenException.class)
                     .verify();
+        }
+
+        @Test
+        @DisplayName("should return IdNumberTakenException when the ID number already exists")
+        void save_shouldReturnIdNumberTakenException_whenIdNumberAlreadyExists() {
+            User userToSave = validUser.role(clientRole).build();
+            User savedUser = userToSave.toBuilder().userId(1).build();
+
+            when(roleRepository.findOne(clientRole)).thenReturn(Mono.just(clientRole));
+            when(userRepository.exists(argThat(u -> u != null && u.getEmail() != null && u.getEmail().equals(userToSave.getEmail()))))
+                    .thenReturn(Mono.just(false));
+            if (DefaultValues.ID_NUMBER_UNIQUE) {
+                when(userRepository.exists(argThat(u -> u != null && u.getIdNumber() != null && u.getIdNumber().equals(userToSave.getIdNumber()))))
+                        .thenReturn(Mono.just(true));
+                StepVerifier.create(userUseCase.saveUser(userToSave))
+                        .expectError(IdNumberTakenException.class)
+                        .verify();
+            } else {
+                when(userRepository.save(any(User.class))).thenReturn(Mono.just(savedUser));
+                StepVerifier.create(userUseCase.saveUser(userToSave))
+                    .expectNext(savedUser)
+                    .verifyComplete();
+            }
         }
     }
 }

@@ -86,6 +86,7 @@ public class ApiConstants {
         public static final String LAST_NAME_NOT_BLANK = "Last name can't be empty";
         public static final String LAST_NAME_SIZE = "Last name must have less than 50 characters";
         public static final String EMAIL_NOT_BLANK = "Email can't be empty";
+        public static final String ID_NUMBER_NOT_BLANK = "Id number can't be empty";
         public static final String EMAIL_VALID = "Email should be valid";
         public static final String EMAIL_SIZE = "Email must have less than 100 characters";
         public static final String ID_NUMBER_SIZE = "Id Number must have less than 50 characters";

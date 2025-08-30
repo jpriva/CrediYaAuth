@@ -5,6 +5,8 @@ import java.math.BigDecimal;
 public class DefaultValues {
     private DefaultValues(){}
 
+    public static final boolean ID_NUMBER_UNIQUE = true;
+
     public static final String DEFAULT_ROLE_NAME = "CLIENTE";
     public static final int DEFAULT_ROLE_ID = 3;
     public static final String DEFAULT_ROLE_DESCRIPTION = "Cliente Solicitante";
