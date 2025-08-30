@@ -11,7 +11,7 @@ import co.com.pragma.model.constants.ErrorMessage;
 import co.com.pragma.model.exceptions.EmailTakenException;
 import co.com.pragma.model.exceptions.FieldBlankException;
 import co.com.pragma.model.logs.gateways.LoggerPort;
-import co.com.pragma.model.user.Role;
+import co.com.pragma.model.role.Role;
 import co.com.pragma.model.user.User;
 import co.com.pragma.usecase.user.UserUseCase;
 import org.assertj.core.api.Assertions;
@@ -48,7 +48,6 @@ class RouterRestTest {
     private UserMapper userMapper;
 
     private UserRequestDTO requestDto;
-    private User domainUser;
     private UserResponseDTO responseDto;
 
     @BeforeEach
@@ -58,11 +57,11 @@ class RouterRestTest {
                 .lastName("Doe")
                 .email("john.doe@example.com")
                 .idNumber("123456789")
-                .role(RoleDTO.builder().name(DefaultValues.DEFAULT_ROLE_NAME).build())
+                .rolId(3)
                 .baseSalary(new BigDecimal(5000000))
                 .build();
 
-        domainUser = User.builder().email("john.doe@example.com").build();
+        User domainUser = User.builder().email("john.doe@example.com").build();
         when(userMapper.toDomain(any(UserRequestDTO.class))).thenReturn(domainUser);
 
         responseDto = UserResponseDTO.builder()

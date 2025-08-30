@@ -1,6 +1,6 @@
-package co.com.pragma.model.user.gateways;
+package co.com.pragma.model.role.gateways;
 
-import co.com.pragma.model.user.Role;
+import co.com.pragma.model.role.Role;
 import reactor.core.publisher.Mono;
 
 public interface RoleRepository {

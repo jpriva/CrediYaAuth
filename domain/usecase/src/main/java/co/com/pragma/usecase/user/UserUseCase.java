@@ -1,19 +1,17 @@
 package co.com.pragma.usecase.user;
 
-import co.com.pragma.model.exceptions.*;
-import co.com.pragma.model.logs.gateways.LoggerPort;
-import co.com.pragma.model.transaction.gateways.TransactionalPort;
-import co.com.pragma.model.user.Role;
-import co.com.pragma.model.user.User;
-import co.com.pragma.model.constants.DefaultValues;
 import co.com.pragma.model.constants.ErrorMessage;
 import co.com.pragma.model.constants.LogMessages;
-import co.com.pragma.model.user.gateways.RoleRepository;
+import co.com.pragma.model.exceptions.*;
+import co.com.pragma.model.logs.gateways.LoggerPort;
+import co.com.pragma.model.role.Role;
+import co.com.pragma.model.role.gateways.RoleRepository;
+import co.com.pragma.model.transaction.gateways.TransactionalPort;
+import co.com.pragma.model.user.User;
 import co.com.pragma.model.user.gateways.UserRepository;
+import co.com.pragma.usecase.user.utils.UserUtils;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
-
-import static co.com.pragma.usecase.user.utils.UserUtils.verifyUserData;
 
 /**
  * Use case for user management.
@@ -46,22 +44,14 @@ public class UserUseCase {
      * @throws EmailTakenException if the provided email is already in use by another user.
      */
     public Mono<User> saveUser(User user) {
-        if (user == null){
-            return Mono.error(new UserNullException());
-        }
-        user.trimFields();
-        CustomException validationError = verifyUserData(user);
-        if (validationError != null) {
-            logger.error(validationError.getMessage(), validationError);
-            return Mono.error(validationError);
-        }
-        if (user.getRole() == null || (user.getRole().getRolId() == null && user.getRole().getName() == null)) {
-            user.setRole(Role.builder().name(DefaultValues.DEFAULT_ROLE_NAME).build());
-        }
-
-        return saveUserTransaction(user)
-                .doFirst(() -> logger.info(LogMessages.START_SAVING_USER_PROCESS + " for email: {}", user.getEmail()))
-                .doOnError(ex -> logger.error(ErrorMessage.ERROR_SAVING_USER + " for email: {}", user.getEmail(), ex))
+        return Mono.justOrEmpty(user)
+                .switchIfEmpty(Mono.defer(() -> Mono.error(new UserNullException())))
+                .flatMap(UserUtils::trim)
+                .flatMap(UserUtils::verifyUserData)
+                .map(UserUtils::assignDefaultRollIfMissing)
+                .flatMap(this::saveUserTransaction)
+                .doFirst(() -> logger.info(LogMessages.START_SAVING_USER_PROCESS + " for email: {}", user != null ? user.getEmail() : "null"))
+                .doOnError(ex -> logger.error(ErrorMessage.ERROR_SAVING_USER + " for email: {}", (user != null ? user.getEmail() : "null"), ex))
                 .doOnSuccess(savedUser -> logger.info(LogMessages.SAVED_USER + " with ID: {}", savedUser.getUserId()))
                 .as(transactionalPort::transactional);
     }
@@ -80,6 +70,7 @@ public class UserUseCase {
                 .flatMap(role -> checkEmail(user, role))
                 .flatMap(userRepository::save);
     }
+
     /**
      * Finds the user's role in the repository.
      * If the role is not found, it emits a {@link RoleNotFoundException}.

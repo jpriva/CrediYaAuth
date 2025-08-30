@@ -1,7 +1,7 @@
 package co.com.pragma.r2dbc;
 
 import co.com.pragma.model.constants.DefaultValues;
-import co.com.pragma.model.user.Role;
+import co.com.pragma.model.role.Role;
 import co.com.pragma.model.user.User;
 import co.com.pragma.r2dbc.entity.RoleEntity;
 import co.com.pragma.r2dbc.entity.UserEntity;
@@ -142,4 +142,5 @@ class UserEntityRepositoryAdapterIntegrationTest {
         StepVerifier.create(result)
                 .expectNext(false).verifyComplete();
     }
+
 }

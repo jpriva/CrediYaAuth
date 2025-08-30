@@ -7,7 +7,9 @@ import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring", uses = PersistenceRoleMapper.class)
 public interface PersistenceUserMapper {
-    @Mapping(target = "role", ignore = true)
+    @Mapping(source = "rolId", target = "role.rolId")
+    @Mapping(target = "role.name", ignore = true)
+    @Mapping(target = "role.description", ignore = true)
     User toDomain(UserEntity userEntity);
 
     @Mapping(source = "role.rolId", target = "rolId")

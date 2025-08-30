@@ -3,7 +3,7 @@ package co.com.pragma.api.mapper;
 import co.com.pragma.api.dto.RoleDTO;
 import co.com.pragma.api.dto.UserRequestDTO;
 import co.com.pragma.api.dto.UserResponseDTO;
-import co.com.pragma.model.user.Role;
+import co.com.pragma.model.role.Role;
 import co.com.pragma.model.user.User;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -39,7 +39,7 @@ class UserMapperTest {
                 .email("john.doe@example.com")
                 .idNumber("123456789")
                 .baseSalary(new BigDecimal("50000.00"))
-                .role(roleDto)
+                .rolId(roleDto.getRolId())
                 .phone("1234567890")
                 .address("123 Main St")
                 .birthDate(LocalDate.of(1990, 1, 1))
@@ -60,24 +60,26 @@ class UserMapperTest {
 
         assertNotNull(user.getRole());
         assertEquals(roleDto.getRolId(), user.getRole().getRolId());
-        assertEquals(roleDto.getName(), user.getRole().getName());
     }
 
     @Test
-    void toDomain_whenUserRequestDTOHasNullRole_shouldMapToUserWithNullRole() {
+    void toDomain_whenUserRequestDTOHasNullRole_shouldMapToUserWithEmptyRole() {
         UserRequestDTO userRequestDTO = UserRequestDTO.builder()
                 .name("John")
                 .lastName("Doe")
                 .email("john.doe@example.com")
                 .idNumber("123456789")
                 .baseSalary(new BigDecimal("50000.00"))
-                .role(null)
+                .rolId(null)
                 .build();
 
         User user = userMapper.toDomain(userRequestDTO);
 
         assertNotNull(user);
-        assertNull(user.getRole());
+        assertNotNull(user.getRole());
+        assertNull(user.getRole().getDescription());
+        assertNull(user.getRole().getName());
+        assertNull(user.getRole().getRolId());
     }
 
     @Test

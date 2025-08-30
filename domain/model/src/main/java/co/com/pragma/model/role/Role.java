@@ -1,4 +1,4 @@
-package co.com.pragma.model.user;
+package co.com.pragma.model.role;
 
 import lombok.*;
 

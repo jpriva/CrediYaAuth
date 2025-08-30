@@ -10,6 +10,7 @@ import org.mapstruct.Mapping;
 public interface UserMapper {
 
     @Mapping(target = "userId", ignore = true)
+    @Mapping(target = "role.rolId", source = "rolId")
     User toDomain(UserRequestDTO dto);
 
     UserResponseDTO toResponseDto(User user);
