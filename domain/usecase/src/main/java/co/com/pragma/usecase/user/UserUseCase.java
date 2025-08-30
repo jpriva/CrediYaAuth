@@ -34,24 +34,24 @@ public class UserUseCase {
      *
      * @param user The {@link User} object to be saved. It must not be null.
      * @return A {@link Mono} that emits the saved {@link User} with its new ID upon success.
-     * If any validation or persistence error occurs, the Mono will emit an error.
-     * @throws UserNullException             if the provided user object is null.
-     * @throws FieldBlankException           if a required field (like name, lastName, email, or baseSalary) is null or blank.
+     *         If any validation or persistence error occurs, the Mono will emit an error.
+     * @throws UserNullException if the provided user object is null.
+     * @throws FieldBlankException if a required field (like name, lastName, email, or baseSalary) is null or blank.
      * @throws FieldSizeOutOfBoundsException if a field's length exceeds its defined maximum.
-     * @throws SalaryUnboundException        if the baseSalary is outside the allowed range.
-     * @throws EmailFormatException          if the email does not match the required format.
-     * @throws RoleNotFoundException         if the specified role does not exist in the system.
-     * @throws EmailTakenException           if the provided email is already in use by another user.
+     * @throws SalaryUnboundException if the baseSalary is outside the allowed range.
+     * @throws EmailFormatException if the email does not match the required format.
+     * @throws RoleNotFoundException if the specified role does not exist in the system.
+     * @throws EmailTakenException if the provided email is already in use by another user.
      */
     public Mono<User> saveUser(User user) {
         return Mono.justOrEmpty(user)
-                .switchIfEmpty(Mono.error(new UserNullException()))
+                .switchIfEmpty(Mono.defer(() -> Mono.error(new UserNullException())))
                 .flatMap(UserUtils::trim)
                 .flatMap(UserUtils::verifyUserData)
                 .map(UserUtils::assignDefaultRollIfMissing)
                 .flatMap(this::saveUserTransaction)
                 .doFirst(() -> logger.info(LogMessages.START_SAVING_USER_PROCESS + " for email: {}", user != null ? user.getEmail() : "null"))
-                .doOnError(ex -> logger.error(ErrorMessage.ERROR_SAVING_USER + " for email: {}", user.getEmail(), ex))
+                .doOnError(ex -> logger.error(ErrorMessage.ERROR_SAVING_USER + " for email: {}", (user != null ? user.getEmail() : "null"), ex))
                 .doOnSuccess(savedUser -> logger.info(LogMessages.SAVED_USER + " with ID: {}", savedUser.getUserId()))
                 .as(transactionalPort::transactional);
     }

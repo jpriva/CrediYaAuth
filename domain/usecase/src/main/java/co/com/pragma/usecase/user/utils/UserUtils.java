@@ -14,54 +14,6 @@ public class UserUtils {
     private UserUtils(){}
 
     /**
-     * Performs a series of synchronous validations on the user object.
-     * It aggregates checks for blank fields, field bounds, and email format.
-     *
-     * @param user The user to validate.
-     * @return A {@link CustomException} instance if a validation error is found, or null if the data is valid.
-     */
-    public static Mono<User> verifyUserData(User user) {
-        return verifyUserBlankFields(user)
-                .then(verifyUserFieldsBounds(user))
-                .then(verifyEmailFormat(user))
-                .thenReturn(user);
-    }
-
-    /**
-     * Verifies that all mandatory fields in the user object are not null or blank.
-     *
-     * @param user The user to validate.
-     * @return A {@link FieldBlankException} if a mandatory field is invalid, otherwise null.
-     */
-    private static Mono<Void> verifyUserBlankFields(User user) {
-        return ValidationUtils.validate(user.getName() != null && !user.getName().isBlank(), () -> new FieldBlankException(DefaultValues.NAME_FIELD))
-                .then(ValidationUtils.validate(user.getLastName() != null && !user.getLastName().isBlank(), () -> new FieldBlankException(DefaultValues.LAST_NAME_FIELD)))
-                .then(ValidationUtils.validate(user.getEmail() != null && !user.getEmail().isBlank(), () -> new FieldBlankException(DefaultValues.EMAIL_FIELD)))
-                .then(ValidationUtils.validate(user.getBaseSalary() != null, () -> new FieldBlankException(DefaultValues.SALARY_FIELD)));
-    }
-
-    /**
-     * Verifies that the user's fields do not exceed their defined size or value bounds.
-     *
-     * @param user The user to validate.
-     * @return A {@link FieldSizeOutOfBoundsException} or {@link SalaryUnboundException} if a field is invalid, otherwise null.
-     */
-    private static Mono<Void> verifyUserFieldsBounds(User user) {
-        return ValidationUtils.validate(user.getName().length() <= DefaultValues.MAX_LENGTH_NAME, () -> new FieldSizeOutOfBoundsException(DefaultValues.NAME_FIELD))
-                .then(ValidationUtils.validate(user.getLastName().length() <= DefaultValues.MAX_LENGTH_LAST_NAME, () -> new FieldSizeOutOfBoundsException(DefaultValues.LAST_NAME_FIELD)))
-                .then(ValidationUtils.validate(user.getEmail().length() <= DefaultValues.MAX_LENGTH_EMAIL, () -> new FieldSizeOutOfBoundsException(DefaultValues.EMAIL_FIELD)))
-                .then(ValidationUtils.validate(user.getIdNumber() == null || user.getIdNumber().length() <= DefaultValues.MAX_LENGTH_ID_NUMBER, () -> new FieldSizeOutOfBoundsException(DefaultValues.ID_NUMBER_FIELD)))
-                .then(ValidationUtils.validate(user.getPhone() == null || user.getPhone().length() <= DefaultValues.MAX_LENGTH_PHONE, () -> new FieldSizeOutOfBoundsException(DefaultValues.PHONE_FIELD)))
-                .then(ValidationUtils.validate(user.getAddress() == null || user.getAddress().length() <= DefaultValues.MAX_LENGTH_ADDRESS, () -> new FieldSizeOutOfBoundsException(DefaultValues.ADDRESS_FIELD)))
-                .then(ValidationUtils.validate(user.getBaseSalary().compareTo(DefaultValues.MIN_SALARY) >= 0, SalaryUnboundException::new))
-                .then(ValidationUtils.validate(user.getBaseSalary().compareTo(DefaultValues.MAX_SALARY) <= 0, SalaryUnboundException::new));
-    }
-
-    private static Mono<Void> verifyEmailFormat(User user) {
-        return ValidationUtils.validate(user.getEmail().matches(DefaultValues.EMAIL_REGEX), EmailFormatException::new);
-    }
-
-    /**
      * Trims string fields and scales the salary of a User object, returning a new, immutable instance.
      * This operation is wrapped in a Mono to be used in a reactive chain.
      *
@@ -80,6 +32,67 @@ public class UserUtils {
                 .build());
     }
 
+    /**
+     * Performs a series of synchronous validations on the user object.
+     * It aggregates checks for blank fields, field bounds, and email format.
+     *
+     * @param user The user to validate.
+     * @return A {@link Mono} containing the validated user, or a {@link Mono#error(Throwable)} if any validation fails.
+     */
+    public static Mono<User> verifyUserData(User user) {
+        return verifyUserBlankFields(user)
+                .then(Mono.defer(() -> verifyUserFieldsBounds(user)))
+                .then(Mono.defer(() -> verifyEmailFormat(user)))
+                .thenReturn(user);
+    }
+
+    /**
+     * Verifies that all mandatory fields in the user object are not null or blank.
+     *
+     * @param user The user to validate.
+     * @return An empty {@link Mono} on successful validation, or a {@link Mono#error(Throwable)} on failure.
+     */
+    private static Mono<Void> verifyUserBlankFields(User user) {
+        return ValidationUtils.validateCondition(user.getName() != null && !user.getName().isBlank(), () -> new FieldBlankException(DefaultValues.NAME_FIELD))
+                .then(ValidationUtils.validateCondition(user.getLastName() != null && !user.getLastName().isBlank(), () -> new FieldBlankException(DefaultValues.LAST_NAME_FIELD)))
+                .then(ValidationUtils.validateCondition(user.getEmail() != null && !user.getEmail().isBlank(), () -> new FieldBlankException(DefaultValues.EMAIL_FIELD)))
+                .then(ValidationUtils.validateCondition(user.getBaseSalary() != null, () -> new FieldBlankException(DefaultValues.SALARY_FIELD)));
+    }
+
+    /**
+     * Verifies that the user's fields do not exceed their defined size or value bounds.
+     *
+     * @param user The user to validate.
+     * @return An empty {@link Mono} on successful validation, or a {@link Mono#error(Throwable)} on failure.
+     */
+    private static Mono<Void> verifyUserFieldsBounds(User user) {
+        return ValidationUtils.validateCondition(user.getName().length() <= DefaultValues.MAX_LENGTH_NAME, () -> new FieldSizeOutOfBoundsException(DefaultValues.NAME_FIELD))
+                .then(ValidationUtils.validateCondition(user.getLastName().length() <= DefaultValues.MAX_LENGTH_LAST_NAME, () -> new FieldSizeOutOfBoundsException(DefaultValues.LAST_NAME_FIELD)))
+                .then(ValidationUtils.validateCondition(user.getEmail().length() <= DefaultValues.MAX_LENGTH_EMAIL, () -> new FieldSizeOutOfBoundsException(DefaultValues.EMAIL_FIELD)))
+                .then(ValidationUtils.validateCondition(user.getIdNumber() == null || user.getIdNumber().length() <= DefaultValues.MAX_LENGTH_ID_NUMBER, () -> new FieldSizeOutOfBoundsException(DefaultValues.ID_NUMBER_FIELD)))
+                .then(ValidationUtils.validateCondition(user.getPhone() == null || user.getPhone().length() <= DefaultValues.MAX_LENGTH_PHONE, () -> new FieldSizeOutOfBoundsException(DefaultValues.PHONE_FIELD)))
+                .then(ValidationUtils.validateCondition(user.getAddress() == null || user.getAddress().length() <= DefaultValues.MAX_LENGTH_ADDRESS, () -> new FieldSizeOutOfBoundsException(DefaultValues.ADDRESS_FIELD)))
+                .then(ValidationUtils.validateCondition(user.getBaseSalary().compareTo(DefaultValues.MIN_SALARY) >= 0, SalaryUnboundException::new))
+                .then(ValidationUtils.validateCondition(user.getBaseSalary().compareTo(DefaultValues.MAX_SALARY) <= 0, SalaryUnboundException::new));
+    }
+
+    /**
+     * Verifies that the user's email matches the expected format.
+     *
+     * @param user The user to validate.
+     * @return An empty {@link Mono} on successful validation, or a {@link Mono#error(Throwable)} on failure.
+     */
+    private static Mono<Void> verifyEmailFormat(User user) {
+        return ValidationUtils.validateCondition(user.getEmail().matches(DefaultValues.EMAIL_REGEX), EmailFormatException::new);
+    }
+
+    /**
+     * Assigns a default role to the user if no valid role reference is provided.
+     * This method is immutable; it returns a new User instance if the role is added.
+     *
+     * @param user The user to check.
+     * @return A new user instance with the default role if needed, or the original user instance.
+     */
     public static User assignDefaultRollIfMissing(User user) {
         if (isRoleReferenceMissing(user.getRole())) {
             return user.toBuilder().role(Role.builder().name(DefaultValues.DEFAULT_ROLE_NAME).build()).build();

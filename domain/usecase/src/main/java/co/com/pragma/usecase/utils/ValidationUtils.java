@@ -20,8 +20,9 @@ public class ValidationUtils {
      * @param exceptionSupplier A supplier for the exception to be thrown if validation fails.
      * @return An empty {@link Mono} on successful validation, or a {@link Mono#error(Throwable)} on failure.
      */
-    public static Mono<Void> validate(boolean condition, Supplier<? extends Throwable> exceptionSupplier) {
-        return Mono.defer(() ->
+    public static Mono<Void> validateCondition(boolean condition, Supplier<? extends Throwable> exceptionSupplier) {
+        return
+                Mono.defer(() ->
                 condition ?
                         Mono.empty() :
                         Mono.error(exceptionSupplier.get())
