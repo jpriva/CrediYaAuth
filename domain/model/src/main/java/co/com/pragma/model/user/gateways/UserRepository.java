@@ -9,4 +9,6 @@ public interface UserRepository {
 
     Mono<Boolean> exists(User example);
 
+    Mono<User> findOne(User example);
+
 }

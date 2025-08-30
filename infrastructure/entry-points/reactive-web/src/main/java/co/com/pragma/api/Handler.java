@@ -1,5 +1,7 @@
 package co.com.pragma.api;
 
+import co.com.pragma.api.constants.ApiConstants;
+import co.com.pragma.api.dto.ErrorDTO;
 import co.com.pragma.api.dto.UserRequestDTO;
 import co.com.pragma.api.mapper.UserMapper;
 import co.com.pragma.usecase.user.UserUseCase;
@@ -10,6 +12,11 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
+
+import java.time.Instant;
+
+import static co.com.pragma.model.constants.ErrorMessage.USER_NOT_FOUND;
+import static co.com.pragma.model.constants.ErrorMessage.USER_NOT_FOUND_CODE;
 
 @Component
 @RequiredArgsConstructor
@@ -27,5 +34,27 @@ public class Handler {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .bodyValue(savedUser)
                 );
+    }
+
+    public Mono<ServerResponse> listenGETUserByIdNumberUseCase(ServerRequest serverRequest) {
+        String idNumber = serverRequest.pathVariable(ApiConstants.ApiParams.ID_NUMBER_PARAM);
+        return userUseCase.findByIdNumber(idNumber)
+                .map(userMapper::toResponseDto)
+                .flatMap(userDto->
+                        ServerResponse.ok()
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .bodyValue(userDto)
+                )
+                .switchIfEmpty(Mono.defer(() -> {
+                    ErrorDTO errorDto = ErrorDTO.builder()
+                            .timestamp(Instant.now())
+                            .path(serverRequest.path())
+                            .code(USER_NOT_FOUND_CODE)
+                            .message(USER_NOT_FOUND)
+                            .build();
+                    return ServerResponse.status(HttpStatus.NOT_FOUND)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .bodyValue(errorDto);
+                }));
     }
 }

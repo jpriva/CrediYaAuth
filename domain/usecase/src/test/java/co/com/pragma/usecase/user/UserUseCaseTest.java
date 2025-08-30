@@ -72,6 +72,32 @@ class UserUseCaseTest {
     }
 
     @Test
+    @DisplayName("should find a user when ID number is found")
+    void save_shouldFindUser_whenIdNumberIsFound() {
+        String idNumber = "123456789";
+
+        User userResponse = validUser.idNumber(idNumber).userId(1).build();
+
+        when(userRepository.findOne(argThat(u -> u.getIdNumber().equals(idNumber)))).thenReturn(Mono.just(userResponse));
+
+        StepVerifier.create(userUseCase.findByIdNumber(idNumber))
+                .expectNext(userResponse)
+                .verifyComplete();
+    }
+
+    @Test
+    @DisplayName("should return empty user when ID number is not found")
+    void save_shouldReturnEmptyUser_whenIdNumberIsNotFound() {
+        String idNumber = "123456789";
+
+        when(userRepository.findOne(argThat(u -> u.getIdNumber().equals(idNumber)))).thenReturn(Mono.empty());
+
+        StepVerifier.create(userUseCase.findByIdNumber(idNumber))
+                .expectNextCount(0)
+                .verifyComplete();
+    }
+
+    @Test
     @DisplayName("should save a user when all data is valid and a role is provided")
     void save_shouldSaveUser_whenDataIsValidAndRolIsProvided() {
 

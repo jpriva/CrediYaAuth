@@ -41,6 +41,10 @@ public class UserUseCase {
                 .as(transactionalPort::transactional);
     }
 
+    public Mono<User> findByIdNumber(String idNumber) {
+        return userRepository.findOne(User.builder().idNumber(idNumber).build());
+    }
+
     // START Private methods ***********************************************************
 
     private Mono<User> saveUserTransaction(User user) {

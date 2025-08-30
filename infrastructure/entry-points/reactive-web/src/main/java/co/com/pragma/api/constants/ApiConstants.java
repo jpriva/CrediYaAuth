@@ -7,14 +7,22 @@ import lombok.NoArgsConstructor;
 public class ApiConstants {
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    public static final class ApiParams {
+        public static final String ID_NUMBER_PARAM = "idNumber";
+    }
+
+    @NoArgsConstructor(access = AccessLevel.PRIVATE)
     public static final class ApiPaths {
         public static final String BASE_PATH = "/api/v1";
         public static final String USERS_PATH = BASE_PATH + "/usuarios";
+        public static final String USER_BY_ID_NUMBER_PATH = USERS_PATH + "/{"+ApiParams.ID_NUMBER_PARAM+"}";
     }
+
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
     public static final class Operations {
         public static final String SAVE_USER_OPERATION_ID = "saveUser";
         public static final String SAVE_USER_REQUEST_BODY_DESC = "User Requested Data";
+        public static final String FIND_USER_BY_ID_NUMBER_OPERATION_ID = "findUserByIdNumber";
     }
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -25,6 +33,10 @@ public class ApiConstants {
         public static final String BAD_REQUEST_CODE = "400";
         public static final String SAVE_USER_CONFLICT_DESC = "Data conflict (e.g. email already exists)";
         public static final String CONFLICT_CODE = "409";
+        public static final String FIND_USER_SUCCESS_DESC = "User Found Successfully";
+        public static final String SUCCESS_OK_CODE = "200";
+        public static final String FIND_USER_BY_ID_NUMBER_NOT_FOUND_DESC = "User with provided ID not found";
+        public static final String NOT_FOUND_CODE = "404";
     }
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
