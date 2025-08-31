@@ -45,4 +45,5 @@ public final class ErrorMessage {
 
     public static final String UNKNOWN_CODE = "UNKNOWN";
     public static final String UNKNOWN_ERROR = "We are sorry, something went wrong. Please try again later.";
+
 }

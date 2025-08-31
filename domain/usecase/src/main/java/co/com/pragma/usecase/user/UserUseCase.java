@@ -42,7 +42,12 @@ public class UserUseCase {
     }
 
     public Mono<User> findByIdNumber(String idNumber) {
-        return userRepository.findOne(User.builder().idNumber(idNumber).build());
+        return userRepository.findOne(User.builder().idNumber(idNumber).build())
+                .flatMap(UserUtils::trim)
+                .flatMap(this::findAndValidateRole)
+                .doFirst(() -> logger.info(LogMessages.FINDING_USER_BY_ID_NUMBER, idNumber))
+                .doOnError(ex -> logger.error(LogMessages.ERROR_FINDING_USER_BY_ID_NUMBER,idNumber,ex))
+                .doOnNext(user -> logger.info(LogMessages.USER_WITH_ID_NUMBER_FOUND, user.getUserId()));
     }
 
     // START Private methods ***********************************************************
