@@ -9,6 +9,7 @@ import co.com.pragma.r2dbc.mapper.PersistenceRoleMapper;
 import co.com.pragma.r2dbc.mapper.PersistenceUserMapper;
 import io.r2dbc.spi.ConnectionFactories;
 import io.r2dbc.spi.ConnectionFactory;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,6 +30,8 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.math.BigDecimal;
+
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = UserEntityRepositoryAdapterIntegrationTest.TestConfig.class)
@@ -141,6 +144,43 @@ class UserEntityRepositoryAdapterIntegrationTest {
 
         StepVerifier.create(result)
                 .expectNext(false).verifyComplete();
+    }
+
+    @Test
+    void findOne_shouldReturnUser_whenUserExists() {
+        String targetEmail = "findme@example.com";
+        UserEntity savedEntity = userEntityRepository.save(UserEntity.builder()
+                .email(targetEmail)
+                .name("Find")
+                .lastName("Me")
+                .idNumber("555")
+                .rolId(savedRoleEntity.getRolId())
+                .baseSalary(BigDecimal.TEN)
+                .build()
+        ).block();
+
+        User example = User.builder().email(targetEmail).build();
+
+        Mono<User> result = userRepository.findOne(example);
+
+        StepVerifier.create(result)
+                .assertNext(foundUser -> {
+                    Assertions.assertNotNull(savedEntity);
+                    Assertions.assertNotNull(savedEntity.getUserId());
+                    assertThat(foundUser.getUserId()).isEqualTo(savedEntity.getUserId());
+                    assertThat(foundUser.getEmail()).isEqualTo(targetEmail);
+                    assertThat(foundUser.getName()).isEqualTo("Find");
+                })
+                .verifyComplete();
+    }
+
+    @Test
+    void findOne_shouldReturnEmpty_whenUserDoesNotExist() {
+        User example = User.builder().email("nonexistent@example.com").build();
+
+        StepVerifier.create(userRepository.findOne(example))
+                .expectNextCount(0)
+                .verifyComplete();
     }
 
 }

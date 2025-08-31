@@ -68,7 +68,9 @@ class RouterRestTest {
         responseDto = UserResponseDTO.builder()
                 .userId(3)
                 .email("john.doe@example.com")
+                .idNumber("123456789")
                 .role(RoleDTO.builder().rolId(3).name(DefaultValues.DEFAULT_ROLE_NAME).build())
+                .baseSalary(new BigDecimal(5000000))
                 .build();
     }
 
@@ -143,5 +145,48 @@ class RouterRestTest {
                 .value(errorDTO ->
                         Assertions.assertThat(errorDTO.getCode()).isEqualTo(ErrorMessage.FAIL_READ_REQUEST_CODE)
                 );
+    }
+
+    @Test
+    void findUserByIdNumber_shouldReturnOk_whenUserIsFound() {
+        String idNumber = "123456789";
+        User useCaseResponse = User.builder()
+                .userId(3)
+                .name("John")
+                .lastName("Doe")
+                .email("john.doe@example.com")
+                .idNumber(idNumber)
+                .role(Role.builder().rolId(3).name(DefaultValues.DEFAULT_ROLE_NAME).description("Test Client").build())
+                .baseSalary(new BigDecimal(5000000))
+                .build();
+        when(userUseCase.findByIdNumber(idNumber)).thenReturn(Mono.just(useCaseResponse));
+        when(userMapper.toResponseDto(any(User.class))).thenReturn(responseDto);
+
+        webTestClient.get()
+                .uri(ApiConstants.ApiPaths.USER_BY_ID_NUMBER_PATH, idNumber)
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(UserResponseDTO.class)
+                .value(userResponse ->
+                        Assertions.assertThat(userResponse.getEmail()).isEqualTo("john.doe@example.com")
+                );
+    }
+
+    @Test
+    void findUserByIdNumber_shouldReturnNotFound_whenUserDoesNotExist() {
+        String idNumber = "999999999";
+        when(userUseCase.findByIdNumber(idNumber)).thenReturn(Mono.empty());
+
+        webTestClient.get()
+                .uri(ApiConstants.ApiPaths.USER_BY_ID_NUMBER_PATH, idNumber)
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus().isNotFound()
+                .expectBody(ErrorDTO.class)
+                .value(error -> {
+                    Assertions.assertThat(error.getCode()).isEqualTo(ErrorMessage.USER_NOT_FOUND_CODE);
+                    Assertions.assertThat(error.getMessage()).isEqualTo(ErrorMessage.USER_NOT_FOUND);
+                });
     }
 }

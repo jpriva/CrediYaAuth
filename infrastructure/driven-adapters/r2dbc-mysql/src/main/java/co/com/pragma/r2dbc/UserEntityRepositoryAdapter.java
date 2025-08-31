@@ -31,4 +31,10 @@ public class UserEntityRepositoryAdapter implements UserRepository {
     public Mono<Boolean> exists(User example) {
         return userRepository.exists(Example.of(userMapper.toEntity(example)));
     }
+
+    @Override
+    public Mono<User> findOne(User example) {
+        return userRepository.findOne(Example.of(userMapper.toEntity(example)))
+                .map(userMapper::toDomain);
+    }
 }
