@@ -159,7 +159,7 @@ class RouterRestTest {
                 .role(Role.builder().rolId(3).name(DefaultValues.DEFAULT_ROLE_NAME).description("Test Client").build())
                 .baseSalary(new BigDecimal(5000000))
                 .build();
-        when(userUseCase.findByIdNumber(any(String.class))).thenReturn(Mono.just(useCaseResponse));
+        when(userUseCase.findByIdNumber(idNumber)).thenReturn(Mono.just(useCaseResponse));
         when(userMapper.toResponseDto(any(User.class))).thenReturn(responseDto);
 
         webTestClient.get()
