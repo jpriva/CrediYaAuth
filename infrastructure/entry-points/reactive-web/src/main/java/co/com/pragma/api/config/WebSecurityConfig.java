@@ -2,7 +2,7 @@ package co.com.pragma.api.config;
 
 import co.com.pragma.api.constants.ApiConstants;
 import co.com.pragma.api.constants.ApiConstants.ApiPathMatchers;
-import co.com.pragma.model.exceptions.InvalidCredentialsException;
+import co.com.pragma.api.exception.handler.CustomAccessDeniedHandler;
 import co.com.pragma.model.jwt.JwtData;
 import co.com.pragma.model.jwt.gateways.JwtProviderPort;
 import lombok.RequiredArgsConstructor;
@@ -29,9 +29,11 @@ import java.util.List;
 public class WebSecurityConfig {
 
     private final JwtProviderPort jwtProvider;
+    private final CustomAccessDeniedHandler accessDeniedHandler;
 
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
+
         return http
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
@@ -51,6 +53,9 @@ public class WebSecurityConfig {
                                 ApiConstants.Role.ADMIN_ROLE_NAME,
                                 ApiConstants.Role.ADVISOR_ROLE_NAME
                         ).anyExchange().authenticated()
+                )
+                .exceptionHandling(spec ->
+                        spec.accessDeniedHandler(accessDeniedHandler)
                 )
                 .build();
     }
@@ -74,10 +79,10 @@ public class WebSecurityConfig {
                     Authentication auth = new UsernamePasswordAuthenticationToken(email, null, authorities);
                     return Mono.just(new SecurityContextImpl(auth));
                 } catch (Exception e) {
-                    return Mono.error(new InvalidCredentialsException());
+                    return Mono.empty();
                 }
             }
-            return Mono.error(new InvalidCredentialsException());
+            return Mono.empty();
         }
     }
 }
