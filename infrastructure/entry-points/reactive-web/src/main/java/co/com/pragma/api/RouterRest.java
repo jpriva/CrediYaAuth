@@ -18,6 +18,9 @@ public class RouterRest {
                 POST(ApiConstants.ApiPaths.USERS_PATH).and(accept(MediaType.APPLICATION_JSON)),
                 handler::listenPOSTSaveUserUseCase
         ).andRoute(
+                POST(ApiConstants.ApiPaths.LOGIN_PATH).and(accept(MediaType.APPLICATION_JSON)),
+                handler::listenPOSTLoginUseCase
+        ).andRoute(
                 GET(ApiConstants.ApiPaths.USER_BY_ID_NUMBER_PATH),
                 handler::listenGETUserByIdNumberUseCase
         );

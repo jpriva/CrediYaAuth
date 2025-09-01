@@ -54,3 +54,8 @@ springdoc:
 logging:
   level:
     org.springframework.transaction.reactive: DEBUG
+
+security:
+  jwt:
+    secret: 6wmLjTUj5h4CXtp23BPjlr2IouInKGEBhqVi+LkR1KlIisuE4dKm4vbwWhUKwPsg53CjqX5Uu2L8TshpLXPdWA==
+    expiration: 3600

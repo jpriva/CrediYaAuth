@@ -15,7 +15,7 @@ import lombok.*;
 public class RoleDTO {
     @Schema(description = ApiConstants.Role.DESCRIPTION_ROLE_ID, example = ApiConstants.Role.EXAMPLE_ROLE_ID)
     private Integer rolId;
-    @Schema(description = ApiConstants.Role.DESCRIPTION_ROLE_NAME, example = ApiConstants.Role.EXAMPLE_ROLE_NAME)
+    @Schema(description = ApiConstants.Role.DESCRIPTION_ROLE_NAME, example = ApiConstants.Role.CLIENT_ROLE_NAME)
     private String name;
     @Schema(description = ApiConstants.Role.DESCRIPTION_ROLE_DESCRIPTION, example = ApiConstants.Role.EXAMPLE_ROLE_DESCRIPTION)
     private String description;

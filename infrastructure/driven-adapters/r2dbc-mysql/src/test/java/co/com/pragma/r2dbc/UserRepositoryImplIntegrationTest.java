@@ -95,6 +95,7 @@ class UserEntityRepositoryAdapterIntegrationTest {
                 .lastName("Doe")
                 .email("jane.doe@example.com")
                 .idNumber("987654321")
+                .password("hashed_password_123")
                 .role(savedRole)
                 .baseSalary(new BigDecimal("60000"))
                 .build();
@@ -109,6 +110,7 @@ class UserEntityRepositoryAdapterIntegrationTest {
                     assert savedUser.getEmail().equals(userToSave.getEmail());
                     assert savedUser.getIdNumber().equals(userToSave.getIdNumber());
                     assert savedUser.getBaseSalary().equals(userToSave.getBaseSalary());
+                    assert savedUser.getPassword().equals(userToSave.getPassword());
                 })
                 .verifyComplete();
 
@@ -124,6 +126,7 @@ class UserEntityRepositoryAdapterIntegrationTest {
                 .name("a")
                 .lastName("b")
                 .idNumber("1")
+                .password("any_password")
                 .rolId(savedRoleEntity.getRolId())
                 .baseSalary(BigDecimal.ONE)
                 .build()
@@ -155,6 +158,7 @@ class UserEntityRepositoryAdapterIntegrationTest {
                 .lastName("Me")
                 .idNumber("555")
                 .rolId(savedRoleEntity.getRolId())
+                .password("any_password")
                 .baseSalary(BigDecimal.TEN)
                 .build()
         ).block();
@@ -170,6 +174,7 @@ class UserEntityRepositoryAdapterIntegrationTest {
                     assertThat(foundUser.getUserId()).isEqualTo(savedEntity.getUserId());
                     assertThat(foundUser.getEmail()).isEqualTo(targetEmail);
                     assertThat(foundUser.getName()).isEqualTo("Find");
+                    assertThat(foundUser.getPassword()).isNull();
                 })
                 .verifyComplete();
     }
@@ -179,6 +184,47 @@ class UserEntityRepositoryAdapterIntegrationTest {
         User example = User.builder().email("nonexistent@example.com").build();
 
         StepVerifier.create(userRepository.findOne(example))
+                .expectNextCount(0)
+                .verifyComplete();
+    }
+
+    @Test
+    void findWithPasswordByEmail_shouldReturnUserWithPassword_whenUserExists() {
+        String targetEmail = "auth-user@example.com";
+        String hashedPassword = "hashed_password_for_auth";
+        UserEntity savedEntity = userEntityRepository.save(UserEntity.builder()
+                .email(targetEmail)
+                .password(hashedPassword)
+                .name("Auth")
+                .lastName("User")
+                .idNumber("777")
+                .rolId(savedRoleEntity.getRolId())
+                .baseSalary(BigDecimal.ONE)
+                .build()
+        ).block();
+
+        Mono<User> result = userRepository.findWithPasswordByEmail(targetEmail);
+
+        StepVerifier.create(result)
+                .assertNext(foundUser -> {
+                    assertThat(savedEntity).isNotNull();
+                    if (savedEntity != null) {
+                        assertThat(savedEntity.getUserId()).isNotNull();
+                        assertThat(foundUser.getUserId()).isEqualTo(savedEntity.getUserId());
+                        assertThat(foundUser.getEmail()).isEqualTo(targetEmail);
+                        assertThat(foundUser.getPassword()).isEqualTo(hashedPassword);
+                    }
+                })
+                .verifyComplete();
+    }
+
+    @Test
+    void findWithPasswordByEmail_shouldReturnEmpty_whenEmailDoesNotExist() {
+        String nonExistentEmail = "ghost@example.com";
+
+        Mono<User> result = userRepository.findWithPasswordByEmail(nonExistentEmail);
+
+        StepVerifier.create(result)
                 .expectNextCount(0)
                 .verifyComplete();
     }

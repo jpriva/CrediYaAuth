@@ -3,6 +3,7 @@ package co.com.pragma.api.constants;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
+
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ApiConstants {
 
@@ -15,7 +16,22 @@ public class ApiConstants {
     public static final class ApiPaths {
         public static final String BASE_PATH = "/api/v1";
         public static final String USERS_PATH = BASE_PATH + "/usuarios";
+        public static final String LOGIN_PATH = BASE_PATH + "/login";
         public static final String USER_BY_ID_NUMBER_PATH = USERS_PATH + "/{"+ApiParams.ID_NUMBER_PARAM+"}";
+    }
+
+    @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    public static final class ApiPathMatchers {
+        //PERMIT ALL
+        public static final String LOGIN_MATCHER = ApiPaths.LOGIN_PATH + "/**";
+        public static final String API_DOCS_MATCHER = "/v3/api-docs/**";
+        public static final String SWAGGER_UI_MATCHER = "/swagger-ui/**";
+        public static final String WEB_JARS_MATCHER = "/webjars/**";
+        //ADMIN/ASESOR
+        public static final String USER_MATCHER = ApiPaths.USERS_PATH + "/**";
+        //TEST ENDPOINT
+        public static final String TEST_MATCHER = "/test-endpoint";
+
     }
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -65,18 +81,24 @@ public class ApiConstants {
         public static final String DESCRIPTION_ADDRESS = "User's home address";
         public static final String EXAMPLE_ADDRESS = "Main St 123, Anytown";
 
+        public static final String DESCRIPTION_PASSWORD = "User's home address";
+        public static final String EXAMPLE_PASSWORD = "pass1234";
+
         public static final String DESCRIPTION_BIRTH_DATE = "User's date of birth";
         public static final String EXAMPLE_BIRTH_DATE = "1990-01-15";
     }
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
     public static final class Role {
+        public static final String CLIENT_ROLE_NAME = "CLIENTE";
+        public static final String ADMIN_ROLE_NAME = "ADMIN";
+        public static final String ADVISOR_ROLE_NAME = "ASESOR";
+
         public static final String DESCRIPTION_ROLE = "User's Role";
         public static final String DESCRIPTION_ROLE_ID = "Role's identifier";
         public static final String EXAMPLE_ROLE_ID = "3";
 
         public static final String DESCRIPTION_ROLE_NAME = "Role's name";
-        public static final String EXAMPLE_ROLE_NAME = "CLIENTE";
 
         public static final String DESCRIPTION_ROLE_DESCRIPTION = "Role's description";
         public static final String EXAMPLE_ROLE_DESCRIPTION = "Cliente Solicitante";
@@ -103,9 +125,11 @@ public class ApiConstants {
         public static final String EMAIL_SIZE = "Email must have less than 100 characters";
         public static final String ID_NUMBER_SIZE = "Id Number must have less than 50 characters";
         public static final String SALARY_NOT_NULL = "Base Salary can't be empty";
+        public static final String PASSWORD_NOT_NULL = "Password can't be empty";
         public static final String SALARY_MIN = "Base Salary must be at least 1";
         public static final String SALARY_MAX = "Base Salary must be less than 15,000,000";
         public static final String PHONE_SIZE = "Phone must have less than 20 characters";
         public static final String ADDRESS_SIZE = "Address must have less than 255 characters";
+        public static final String PASSWORD_SIZE = "Password must have at least 8 characters";
     }
 }

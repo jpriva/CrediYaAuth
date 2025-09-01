@@ -11,4 +11,11 @@ dependencies {
     //Mapstruct
     implementation 'org.mapstruct:mapstruct:1.6.3'
     annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.3'
+
+    //Security
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    testImplementation 'org.springframework.security:spring-security-test'
+
+    //JWT
+    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
 }

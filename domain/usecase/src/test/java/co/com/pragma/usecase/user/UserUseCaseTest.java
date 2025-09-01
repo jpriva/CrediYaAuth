@@ -2,6 +2,7 @@ package co.com.pragma.usecase.user;
 
 import co.com.pragma.model.exceptions.*;
 import co.com.pragma.model.logs.gateways.LoggerPort;
+import co.com.pragma.model.password.gateways.PasswordEncoderPort;
 import co.com.pragma.model.transaction.gateways.TransactionalPort;
 import co.com.pragma.model.role.Role;
 import co.com.pragma.model.user.User;
@@ -26,6 +27,7 @@ import java.math.BigDecimal;
 import java.util.stream.Stream;
 import java.time.LocalDate;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -45,6 +47,9 @@ class UserUseCaseTest {
     @Mock
     private TransactionalPort transactionalPort;
 
+    @Mock
+    private PasswordEncoderPort passwordEncoderPort;
+
     @InjectMocks
     private UserUseCase userUseCase;
 
@@ -62,6 +67,7 @@ class UserUseCaseTest {
                 .name("John")
                 .lastName("Doe")
                 .email("john.doe@example.com")
+                .password("S3cureP@ssw0rd")
                 .baseSalary(new BigDecimal("5000000"))
                 .idNumber("123456789")
                 .phone("+57123456789")
@@ -69,25 +75,31 @@ class UserUseCaseTest {
                 .birthDate(LocalDate.now());
 
         lenient().when(transactionalPort.transactional(any(Mono.class))).then(returnsFirstArg());
+        lenient().when(passwordEncoderPort.encode(anyString())).thenReturn("hashed_password");
     }
 
     @Test
-    @DisplayName("should find a user when ID number is found")
-    void save_shouldFindUser_whenIdNumberIsFound() {
+    @DisplayName("findByIdNumber should return a user when the ID number is found")
+    void findByIdNumber_shouldReturnUser_whenIdNumberIsFound() {
         String idNumber = "123456789";
+        User userFromRepo = validUser.idNumber(idNumber).userId(1).role(clientRole).build();
 
-        User userResponse = validUser.idNumber(idNumber).userId(1).build();
-
-        when(userRepository.findOne(argThat(u -> u.getIdNumber().equals(idNumber)))).thenReturn(Mono.just(userResponse));
+        when(userRepository.findOne(argThat(u -> u.getIdNumber().equals(idNumber)))).thenReturn(Mono.just(userFromRepo));
+        when(roleRepository.findOne(clientRole)).thenReturn(Mono.just(clientRole));
 
         StepVerifier.create(userUseCase.findByIdNumber(idNumber))
-                .expectNext(userResponse)
+                .assertNext(actualUser -> {
+                    assertThat(actualUser.getUserId()).isEqualTo(userFromRepo.getUserId());
+                    assertThat(actualUser.getIdNumber()).isEqualTo(userFromRepo.getIdNumber());
+                    assertThat(actualUser.getBaseSalary()).isEqualByComparingTo(userFromRepo.getBaseSalary());
+                    assertThat(actualUser.getRole()).isEqualTo(clientRole);
+                })
                 .verifyComplete();
     }
 
     @Test
-    @DisplayName("should return empty user when ID number is not found")
-    void save_shouldReturnEmptyUser_whenIdNumberIsNotFound() {
+    @DisplayName("findByIdNumber should return an empty Mono when the ID number is not found")
+    void findByIdNumber_shouldReturnEmpty_whenIdNumberIsNotFound() {
         String idNumber = "123456789";
 
         when(userRepository.findOne(argThat(u -> u.getIdNumber().equals(idNumber)))).thenReturn(Mono.empty());

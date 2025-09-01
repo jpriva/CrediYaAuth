@@ -58,9 +58,16 @@ public class UserRequestDTO {
     @Size(max = 20, message = ApiConstants.ValidationMessages.PHONE_SIZE)
     @Schema(description = ApiConstants.User.DESCRIPTION_PHONE, example = ApiConstants.User.EXAMPLE_PHONE)
     private String phone;
+
     @Size(max = 255, message = ApiConstants.ValidationMessages.ADDRESS_SIZE)
     @Schema(description = ApiConstants.User.DESCRIPTION_ADDRESS, example = ApiConstants.User.EXAMPLE_ADDRESS)
     private String address;
+
     @Schema(description = ApiConstants.User.DESCRIPTION_BIRTH_DATE, example = ApiConstants.User.EXAMPLE_BIRTH_DATE)
     private LocalDate birthDate;
+
+    @NotBlank(message = ApiConstants.ValidationMessages.PASSWORD_NOT_NULL)
+    @Size(min = 8, message = ApiConstants.ValidationMessages.PASSWORD_SIZE)
+    @Schema(description = ApiConstants.User.DESCRIPTION_PASSWORD, example = ApiConstants.User.EXAMPLE_PASSWORD)
+    private String password;
 }

@@ -21,6 +21,8 @@ public class DefaultValues {
     public static final int MAX_LENGTH_ID_NUMBER = 50;
     public static final int MAX_LENGTH_PHONE = 20;
     public static final int MAX_LENGTH_ADDRESS = 255;
+    public static final int MAX_LENGTH_PASSWORD = 255;
+    public static final int MIN_LENGTH_PASSWORD = 8;
 
     public static final String NAME_FIELD = "Name";
     public static final String LAST_NAME_FIELD = "Last Name";
@@ -30,5 +32,6 @@ public class DefaultValues {
     public static final String ADDRESS_FIELD = "Address";
     public static final String SALARY_FIELD = "Salary";
     public static final String ROLE_FIELD = "Role";
+    public static final String PASSWORD_FIELD = "Password";
 
 }

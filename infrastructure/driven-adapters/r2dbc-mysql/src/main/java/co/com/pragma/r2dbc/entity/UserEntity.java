@@ -45,4 +45,7 @@ public class UserEntity {
 
     @Column("fecha_nacimiento")
     private LocalDate birthDate;
+
+    @Column("password")
+    private String password;
 }

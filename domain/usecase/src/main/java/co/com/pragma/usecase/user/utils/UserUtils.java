@@ -29,6 +29,7 @@ public class UserUtils {
                 .phone(user.getPhone() != null ? user.getPhone().trim() : null)
                 .address(user.getAddress() != null ? user.getAddress().trim() : null)
                 .baseSalary(user.getBaseSalary() != null ? user.getBaseSalary().setScale(2, RoundingMode.HALF_UP) : null)
+                .password(user.getPassword() != null ? user.getPassword().trim() : null)
                 .build());
     }
 
@@ -57,7 +58,8 @@ public class UserUtils {
                 .then(ValidationUtils.validateCondition(user.getLastName() != null && !user.getLastName().isBlank(), () -> new FieldBlankException(DefaultValues.LAST_NAME_FIELD)))
                 .then(ValidationUtils.validateCondition(user.getEmail() != null && !user.getEmail().isBlank(), () -> new FieldBlankException(DefaultValues.EMAIL_FIELD)))
                 .then(ValidationUtils.validateCondition(user.getIdNumber() != null && !user.getIdNumber().isBlank(), () -> new FieldBlankException(DefaultValues.ID_NUMBER_FIELD)))
-                .then(ValidationUtils.validateCondition(user.getBaseSalary() != null, () -> new FieldBlankException(DefaultValues.SALARY_FIELD)));
+                .then(ValidationUtils.validateCondition(user.getBaseSalary() != null, () -> new FieldBlankException(DefaultValues.SALARY_FIELD)))
+                .then(ValidationUtils.validateCondition(user.getPassword() != null && !user.getPassword().isBlank(), () -> new FieldBlankException(DefaultValues.PASSWORD_FIELD)));
     }
 
     /**
@@ -74,7 +76,8 @@ public class UserUtils {
                 .then(ValidationUtils.validateCondition(user.getPhone() == null || user.getPhone().length() <= DefaultValues.MAX_LENGTH_PHONE, () -> new FieldSizeOutOfBoundsException(DefaultValues.PHONE_FIELD)))
                 .then(ValidationUtils.validateCondition(user.getAddress() == null || user.getAddress().length() <= DefaultValues.MAX_LENGTH_ADDRESS, () -> new FieldSizeOutOfBoundsException(DefaultValues.ADDRESS_FIELD)))
                 .then(ValidationUtils.validateCondition(user.getBaseSalary().compareTo(DefaultValues.MIN_SALARY) >= 0, SalaryUnboundException::new))
-                .then(ValidationUtils.validateCondition(user.getBaseSalary().compareTo(DefaultValues.MAX_SALARY) <= 0, SalaryUnboundException::new));
+                .then(ValidationUtils.validateCondition(user.getBaseSalary().compareTo(DefaultValues.MAX_SALARY) <= 0, SalaryUnboundException::new))
+                .then(ValidationUtils.validateCondition(user.getPassword().length() >= DefaultValues.MIN_LENGTH_PASSWORD && user.getPassword().length() <= DefaultValues.MAX_LENGTH_PASSWORD, () -> new FieldSizeOutOfBoundsException(DefaultValues.PASSWORD_FIELD)));
     }
 
     /**

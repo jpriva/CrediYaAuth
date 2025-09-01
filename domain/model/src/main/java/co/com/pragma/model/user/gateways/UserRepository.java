@@ -11,4 +11,5 @@ public interface UserRepository {
 
     Mono<User> findOne(User example);
 
+    Mono<User> findWithPasswordByEmail(String email);
 }

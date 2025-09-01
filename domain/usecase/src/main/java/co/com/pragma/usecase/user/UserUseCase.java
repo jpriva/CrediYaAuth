@@ -8,6 +8,7 @@ import co.com.pragma.model.exceptions.IdNumberTakenException;
 import co.com.pragma.model.exceptions.RoleNotFoundException;
 import co.com.pragma.model.exceptions.UserNullException;
 import co.com.pragma.model.logs.gateways.LoggerPort;
+import co.com.pragma.model.password.gateways.PasswordEncoderPort;
 import co.com.pragma.model.role.gateways.RoleRepository;
 import co.com.pragma.model.transaction.gateways.TransactionalPort;
 import co.com.pragma.model.user.User;
@@ -26,6 +27,7 @@ public class UserUseCase {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final LoggerPort logger;
+    private final PasswordEncoderPort passwordEncoderPort;
     private final TransactionalPort transactionalPort;
 
     public Mono<User> saveUser(User user) {
@@ -33,6 +35,7 @@ public class UserUseCase {
                 .switchIfEmpty(Mono.defer(() -> Mono.error(new UserNullException())))
                 .flatMap(UserUtils::trim)
                 .flatMap(UserUtils::verifyUserData)
+                .map(userTrimmed -> userTrimmed.toBuilder().password(passwordEncoderPort.encode(userTrimmed.getPassword())).build())
                 .map(UserUtils::assignDefaultRollIfMissing)
                 .flatMap(this::saveUserTransaction)
                 .doFirst(() -> logger.info(LogMessages.START_SAVING_USER_PROCESS + " for email: {}", user != null ? user.getEmail() : "null"))
