@@ -37,6 +37,8 @@ public class ApiConstants {
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
     public static final class Operations {
         public static final String SAVE_USER_OPERATION_ID = "saveUser";
+        public static final String LOGIN_OPERATION_ID = "login";
+        public static final String LOGIN_REQUEST_BODY_DESC = "User credentials for authentication";
         public static final String SAVE_USER_REQUEST_BODY_DESC = "User Requested Data";
         public static final String FIND_USER_BY_ID_NUMBER_OPERATION_ID = "findUserByIdNumber";
     }
@@ -48,11 +50,14 @@ public class ApiConstants {
         public static final String SAVE_USER_BAD_REQUEST_DESC = "Invalid request (e.g. missing or incorrectly formatted data)";
         public static final String BAD_REQUEST_CODE = "400";
         public static final String SAVE_USER_CONFLICT_DESC = "Data conflict (e.g. email already exists)";
+        public static final String LOGIN_SUCCESS_DESC = "Authentication successful, JWT returned";
+        public static final String LOGIN_BAD_REQUEST_DESC = "Invalid request (e.g. missing email or password)";
         public static final String CONFLICT_CODE = "409";
         public static final String FIND_USER_SUCCESS_DESC = "User Found Successfully";
         public static final String SUCCESS_OK_CODE = "200";
         public static final String FIND_USER_BY_ID_NUMBER_NOT_FOUND_DESC = "User with provided ID not found";
         public static final String NOT_FOUND_CODE = "404";
+        public static final String UNAUTHORIZED_CODE = "401";
     }
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -81,11 +86,14 @@ public class ApiConstants {
         public static final String DESCRIPTION_ADDRESS = "User's home address";
         public static final String EXAMPLE_ADDRESS = "Main St 123, Anytown";
 
-        public static final String DESCRIPTION_PASSWORD = "User's home address";
+        public static final String DESCRIPTION_PASSWORD = "User's secure password";
         public static final String EXAMPLE_PASSWORD = "pass1234";
 
         public static final String DESCRIPTION_BIRTH_DATE = "User's date of birth";
         public static final String EXAMPLE_BIRTH_DATE = "1990-01-15";
+
+        public static final String EXAMPLE_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9";
+        public static final String DESCRIPTION_TOKEN = "Token for authentication";
     }
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -131,5 +139,16 @@ public class ApiConstants {
         public static final String PHONE_SIZE = "Phone must have less than 20 characters";
         public static final String ADDRESS_SIZE = "Address must have less than 255 characters";
         public static final String PASSWORD_SIZE = "Password must have at least 8 characters";
+    }
+
+    @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    public static final class ApiConfig {
+        public static final String DESCRIPTION_BEARER_AUTH = "Enter the JWT token obtained from the login endpoint.";
+        public static final String NAME_BEARER_AUTH = "bearerAuth";
+        public static final String SCHEME_BEARER = "bearer";
+        public static final String BEARER_FORMAT_JWT = "JWT";
+        public static final String TITLE_API = "Crediya Auth API Microservice";
+        public static final String VERSION_API = "1.0.0";
+        public static final String DESCRIPTION_API = "This is the API for Crediya Auth Microservice";
     }
 }

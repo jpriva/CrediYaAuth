@@ -2,6 +2,7 @@ package co.com.pragma.api.config;
 
 import co.com.pragma.api.constants.ApiConstants;
 import co.com.pragma.api.constants.ApiConstants.ApiPathMatchers;
+import co.com.pragma.model.exceptions.InvalidCredentialsException;
 import co.com.pragma.model.jwt.JwtData;
 import co.com.pragma.model.jwt.gateways.JwtProviderPort;
 import lombok.RequiredArgsConstructor;
@@ -73,10 +74,10 @@ public class WebSecurityConfig {
                     Authentication auth = new UsernamePasswordAuthenticationToken(email, null, authorities);
                     return Mono.just(new SecurityContextImpl(auth));
                 } catch (Exception e) {
-                    return Mono.empty();
+                    return Mono.error(new InvalidCredentialsException());
                 }
             }
-            return Mono.empty();
+            return Mono.error(new InvalidCredentialsException());
         }
     }
 }

@@ -20,4 +20,9 @@ public class RoleEntityRepositoryAdapter implements RoleRepository {
         return repository.findOne(Example.of(roleMapper.toEntity(role)))
                 .map(roleMapper::toDomain);
     }
+
+    @Override
+    public Mono<Role> findById(Integer roleId) {
+        return repository.findById(roleId).map(roleMapper::toDomain);
+    }
 }

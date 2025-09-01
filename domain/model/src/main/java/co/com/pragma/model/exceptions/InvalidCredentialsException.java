@@ -1,4 +1,12 @@
 package co.com.pragma.model.exceptions;
 
-public class InvalidCredentialsException extends RuntimeException{
+import co.com.pragma.model.constants.ErrorMessage;
+
+import java.net.HttpURLConnection;
+
+public class InvalidCredentialsException extends CustomException {
+
+    public InvalidCredentialsException() {
+        super(ErrorMessage.INVALID_CREDENTIALS, ErrorMessage.INVALID_CREDENTIALS_CODE, HttpURLConnection.HTTP_UNAUTHORIZED);
+    }
 }

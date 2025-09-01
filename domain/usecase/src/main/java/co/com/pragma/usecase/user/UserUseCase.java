@@ -17,10 +17,6 @@ import co.com.pragma.usecase.user.utils.UserUtils;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
 
-/**
- * Use case for user management.
- * Contains the main business logic for user operations.
- */
 @RequiredArgsConstructor
 public class UserUseCase {
 
@@ -35,7 +31,6 @@ public class UserUseCase {
                 .switchIfEmpty(Mono.defer(() -> Mono.error(new UserNullException())))
                 .flatMap(UserUtils::trim)
                 .flatMap(UserUtils::verifyUserData)
-                .map(userTrimmed -> userTrimmed.toBuilder().password(passwordEncoderPort.encode(userTrimmed.getPassword())).build())
                 .map(UserUtils::assignDefaultRollIfMissing)
                 .flatMap(this::saveUserTransaction)
                 .doFirst(() -> logger.info(LogMessages.START_SAVING_USER_PROCESS + " for email: {}", user != null ? user.getEmail() : "null"))
@@ -49,7 +44,7 @@ public class UserUseCase {
                 .flatMap(UserUtils::trim)
                 .flatMap(this::findAndValidateRole)
                 .doFirst(() -> logger.info(LogMessages.FINDING_USER_BY_ID_NUMBER, idNumber))
-                .doOnError(ex -> logger.error(LogMessages.ERROR_FINDING_USER_BY_ID_NUMBER,idNumber,ex))
+                .doOnError(ex -> logger.error(LogMessages.ERROR_FINDING_USER_BY_ID_NUMBER, idNumber, ex))
                 .doOnNext(user -> logger.info(LogMessages.USER_WITH_ID_NUMBER_FOUND, user.getUserId()));
     }
 
@@ -59,11 +54,12 @@ public class UserUseCase {
         return findAndValidateRole(user)
                 .flatMap(userWithRole ->
                         Mono.when(
-                                    checkEmail(userWithRole),
-                                    checkIdNumber(userWithRole)
+                                        checkEmail(userWithRole),
+                                        checkIdNumber(userWithRole)
                                 )
                                 .thenReturn(userWithRole)
                 )
+                .map(userTrimmed -> userTrimmed.toBuilder().password(passwordEncoderPort.encode(userTrimmed.getPassword())).build())
                 .flatMap(userRepository::save);
     }
 

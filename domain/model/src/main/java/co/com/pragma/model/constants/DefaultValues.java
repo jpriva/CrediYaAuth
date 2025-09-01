@@ -3,6 +3,8 @@ package co.com.pragma.model.constants;
 import java.math.BigDecimal;
 
 public class DefaultValues {
+    public static final String ADMIN_ROLE_NAME = "ADMIN";
+
     private DefaultValues(){}
 
     public static final boolean ID_NUMBER_UNIQUE = true;

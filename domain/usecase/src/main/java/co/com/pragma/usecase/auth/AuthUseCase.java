@@ -3,8 +3,10 @@ package co.com.pragma.usecase.auth;
 import co.com.pragma.model.constants.LogMessages;
 import co.com.pragma.model.exceptions.FieldBlankException;
 import co.com.pragma.model.exceptions.InvalidCredentialsException;
+import co.com.pragma.model.exceptions.RoleNotFoundException;
 import co.com.pragma.model.logs.gateways.LoggerPort;
 import co.com.pragma.model.password.gateways.PasswordEncoderPort;
+import co.com.pragma.model.role.gateways.RoleRepository;
 import co.com.pragma.model.user.User;
 import co.com.pragma.model.user.gateways.UserRepository;
 import co.com.pragma.usecase.utils.ValidationUtils;
@@ -18,6 +20,7 @@ import static co.com.pragma.model.constants.DefaultValues.PASSWORD_FIELD;
 public class AuthUseCase {
 
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
     private final PasswordEncoderPort passwordEncoderPort;
     private final LoggerPort logger;
 
@@ -33,9 +36,13 @@ public class AuthUseCase {
                 .then(Mono.defer(() -> userRepository.findWithPasswordByEmail(email)))
                 .doOnError(ex -> logger.error(LogMessages.ERROR_FINDING_USER_BY_EMAIL, email, ex))
                 .flatMap(user -> {
-                    if (passwordEncoderPort.matches(rawPassword, user.getPassword())) {
-                        return Mono.just(user.toBuilder().password(null).build());
-                    } else {
+                    if (passwordEncoderPort.matches(rawPassword, user.getPassword()) && user.getRole() != null && user.getRole().getRolId() != null) {
+                        return roleRepository.findById(user.getRole().getRolId())
+                                .map(role -> user.toBuilder().role(role).password(null).build());
+                    } else if (user.getRole() == null || user.getRole().getRolId() == null) {
+                        logger.error(LogMessages.ERROR_FINDING_ROLE);
+                        return Mono.error(new RoleNotFoundException());
+                    }else {
                         logger.warn(LogMessages.PASSWORD_MISMATCH, email);
                         return Mono.error(new InvalidCredentialsException());
                     }

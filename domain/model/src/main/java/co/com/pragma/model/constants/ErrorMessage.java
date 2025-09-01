@@ -2,6 +2,7 @@ package co.com.pragma.model.constants;
 
 public final class ErrorMessage {
 
+
     private ErrorMessage() {}
 
     public static final String USER_NOT_FOUND_CODE = "U001";
@@ -46,4 +47,9 @@ public final class ErrorMessage {
     public static final String UNKNOWN_CODE = "UNKNOWN";
     public static final String UNKNOWN_ERROR = "We are sorry, something went wrong. Please try again later.";
 
+    public static final String INVALID_CREDENTIALS_CODE = "IC001";
+    public static final String INVALID_CREDENTIALS = "Invalid credentials.";
+
+    public static final String INVALID_ENDPOINT_CODE = "IE001";
+    public static final String INVALID_ENDPOINT = "Invalid endpoint.";
 }
