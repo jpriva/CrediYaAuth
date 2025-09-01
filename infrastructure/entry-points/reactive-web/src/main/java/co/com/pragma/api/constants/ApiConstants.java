@@ -14,6 +14,7 @@ public class ApiConstants {
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
     public static final class ApiPaths {
+        public static final String SWAGGER_PATH = "/swagger-ui.html";
         public static final String BASE_PATH = "/api/v1";
         public static final String USERS_PATH = BASE_PATH + "/usuarios";
         public static final String LOGIN_PATH = BASE_PATH + "/login";

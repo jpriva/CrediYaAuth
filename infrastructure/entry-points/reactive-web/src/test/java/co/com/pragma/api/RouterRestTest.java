@@ -5,6 +5,7 @@ import co.com.pragma.api.dto.ErrorDTO;
 import co.com.pragma.api.dto.RoleDTO;
 import co.com.pragma.api.dto.UserRequestDTO;
 import co.com.pragma.api.dto.UserResponseDTO;
+import co.com.pragma.api.exception.handler.CustomAccessDeniedHandler;
 import co.com.pragma.api.exception.handler.GlobalExceptionHandler;
 import co.com.pragma.api.config.WebSecurityConfig;
 import co.com.pragma.api.mapper.UserMapper;
@@ -38,7 +39,8 @@ import static org.mockito.Mockito.when;
 
 @ContextConfiguration(classes = {
         RouterRest.class, Handler.class,
-        GlobalExceptionHandler.class, WebSecurityConfig.class
+        GlobalExceptionHandler.class, WebSecurityConfig.class,
+        CustomAccessDeniedHandler .class
 })
 @WebFluxTest
 class RouterRestTest {
@@ -60,6 +62,7 @@ class RouterRestTest {
 
     @MockitoBean
     private JwtProviderPort jwtProvider;
+
 
     private UserRequestDTO requestDto;
     private UserResponseDTO responseDto;

@@ -10,6 +10,7 @@ import co.com.pragma.usecase.user.UserUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
+import org.springframework.util.StringUtils;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
@@ -26,7 +27,11 @@ public class AdminUserInitializer implements ApplicationListener<ApplicationRead
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
-        if (adminProps == null || adminProps.getEmail() == null || adminProps.getPassword() == null) return;
+        if (adminProps == null || !StringUtils.hasText(adminProps.getEmail()) || !StringUtils.hasText(adminProps.getPassword())) {
+            logger.warn("Default admin user properties (app.default-admin.email, app.default-admin.password) are not configured. Skipping admin user creation.");
+            return;
+        }
+
         User adminExample = User.builder().email(adminProps.getEmail()).build();
 
         userRepository.findOne(adminExample)

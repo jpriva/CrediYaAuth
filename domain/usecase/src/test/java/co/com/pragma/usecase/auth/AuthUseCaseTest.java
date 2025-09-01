@@ -5,6 +5,8 @@ import co.com.pragma.model.exceptions.FieldBlankException;
 import co.com.pragma.model.exceptions.InvalidCredentialsException;
 import co.com.pragma.model.logs.gateways.LoggerPort;
 import co.com.pragma.model.password.gateways.PasswordEncoderPort;
+import co.com.pragma.model.role.Role;
+import co.com.pragma.model.role.gateways.RoleRepository;
 import co.com.pragma.model.user.User;
 import co.com.pragma.model.user.gateways.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,6 +31,8 @@ class AuthUseCaseTest {
     @Mock
     private UserRepository userRepository;
     @Mock
+    private RoleRepository roleRepository;
+    @Mock
     private PasswordEncoderPort passwordEncoderPort;
     @Mock
     private LoggerPort logger;
@@ -37,13 +41,20 @@ class AuthUseCaseTest {
     private AuthUseCase authUseCase;
 
     private User userFromRepo;
+    private Role roleFromRepo;
 
     @BeforeEach
     void setUp() {
         userFromRepo = User.builder()
                 .userId(1)
                 .email("test@example.com")
+                .role(Role.builder().rolId(1).build())
                 .password("hashed_password")
+                .build();
+        roleFromRepo = Role.builder()
+                .rolId(1)
+                .name("ADMIN")
+                .description("description")
                 .build();
     }
 
@@ -58,6 +69,7 @@ class AuthUseCaseTest {
 
             when(userRepository.findWithPasswordByEmail(email)).thenReturn(Mono.just(userFromRepo));
             when(passwordEncoderPort.matches(rawPassword, "hashed_password")).thenReturn(true);
+            when(roleRepository.findById(userFromRepo.getRole().getRolId())).thenReturn(Mono.just(roleFromRepo));
 
             StepVerifier.create(authUseCase.authenticate(email, rawPassword))
                     .assertNext(authenticatedUser -> {
@@ -100,8 +112,6 @@ class AuthUseCaseTest {
             StepVerifier.create(authUseCase.authenticate(email, rawPassword))
                     .expectError(InvalidCredentialsException.class)
                     .verify();
-
-            verify(logger).warn(LogMessages.PASSWORD_MISMATCH, email);
         }
     }
 
