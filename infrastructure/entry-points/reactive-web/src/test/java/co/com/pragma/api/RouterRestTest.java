@@ -40,7 +40,7 @@ import static org.mockito.Mockito.when;
 @ContextConfiguration(classes = {
         RouterRest.class, Handler.class,
         GlobalExceptionHandler.class, WebSecurityConfig.class,
-        CustomAccessDeniedHandler .class
+        CustomAccessDeniedHandler.class
 })
 @WebFluxTest
 class RouterRestTest {
