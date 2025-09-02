@@ -19,6 +19,7 @@ CREATE TABLE Rol (
     telefono VARCHAR(20) NULL,
     direccion VARCHAR(255) NULL,
     fecha_nacimiento DATE NULL,
+    password VARCHAR(255) NOT NULL,
     PRIMARY KEY (id_usuario),
     CONSTRAINT fk_usuario_rol
       FOREIGN KEY (id_rol)

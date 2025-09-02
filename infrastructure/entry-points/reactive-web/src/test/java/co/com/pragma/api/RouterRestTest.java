@@ -5,15 +5,19 @@ import co.com.pragma.api.dto.ErrorDTO;
 import co.com.pragma.api.dto.RoleDTO;
 import co.com.pragma.api.dto.UserRequestDTO;
 import co.com.pragma.api.dto.UserResponseDTO;
+import co.com.pragma.api.exception.handler.CustomAccessDeniedHandler;
 import co.com.pragma.api.exception.handler.GlobalExceptionHandler;
+import co.com.pragma.api.config.WebSecurityConfig;
 import co.com.pragma.api.mapper.UserMapper;
 import co.com.pragma.model.constants.DefaultValues;
 import co.com.pragma.model.constants.ErrorMessage;
 import co.com.pragma.model.exceptions.EmailTakenException;
 import co.com.pragma.model.exceptions.FieldBlankException;
+import co.com.pragma.model.jwt.gateways.JwtProviderPort;
 import co.com.pragma.model.logs.gateways.LoggerPort;
 import co.com.pragma.model.role.Role;
 import co.com.pragma.model.user.User;
+import co.com.pragma.usecase.auth.AuthUseCase;
 import co.com.pragma.usecase.user.UserUseCase;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
@@ -32,7 +37,11 @@ import java.math.BigDecimal;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-@ContextConfiguration(classes = {RouterRest.class, Handler.class, GlobalExceptionHandler.class})
+@ContextConfiguration(classes = {
+        RouterRest.class, Handler.class,
+        GlobalExceptionHandler.class, WebSecurityConfig.class,
+        CustomAccessDeniedHandler.class
+})
 @WebFluxTest
 class RouterRestTest {
 
@@ -47,6 +56,13 @@ class RouterRestTest {
 
     @MockitoBean
     private UserMapper userMapper;
+
+    @MockitoBean
+    private AuthUseCase authUseCase;
+
+    @MockitoBean
+    private JwtProviderPort jwtProvider;
+
 
     private UserRequestDTO requestDto;
     private UserResponseDTO responseDto;
@@ -75,6 +91,7 @@ class RouterRestTest {
     }
 
     @Test
+    @WithMockUser(authorities = "ADMIN")
     void saveUser_shouldReturnCreated_whenValidRequest() {
         User useCaseResponse = User.builder()
                 .userId(3)
@@ -82,13 +99,13 @@ class RouterRestTest {
                 .lastName("Doe")
                 .email("john.doe@example.com")
                 .idNumber("123456789")
+                .password("password")
                 .role(Role.builder().rolId(3).name(DefaultValues.DEFAULT_ROLE_NAME).description("Test Client").build())
                 .baseSalary(new BigDecimal(5000000))
                 .build();
         when(userUseCase.saveUser(any(User.class))).thenReturn(Mono.just(useCaseResponse));
         when(userMapper.toResponseDto(any(User.class))).thenReturn(responseDto);
 
-        // Act & Assert
         webTestClient.post()
                 .uri(ApiConstants.ApiPaths.USERS_PATH)
                 .accept(MediaType.APPLICATION_JSON)
@@ -105,6 +122,7 @@ class RouterRestTest {
     }
 
     @Test
+    @WithMockUser(authorities = "ADMIN")
     void saveUser_shouldReturnConflict_whenEmailIsTaken() {
         when(userUseCase.saveUser(any(User.class))).thenReturn(Mono.error(new EmailTakenException()));
         webTestClient.post()
@@ -119,6 +137,7 @@ class RouterRestTest {
     }
 
     @Test
+    @WithMockUser(authorities = "ADMIN")
     void saveUser_shouldReturnBadRequest_whenMissingRequiredFields() {
         when(userUseCase.saveUser(any(User.class))).thenReturn(Mono.error(new FieldBlankException("field")));
         webTestClient.post()
@@ -133,6 +152,7 @@ class RouterRestTest {
     }
 
     @Test
+    @WithMockUser(authorities = "ADMIN")
     void saveUser_shouldReturnBadRequest_whenServerWebInputExceptionIsThrown() {
         webTestClient.post()
                 .uri(ApiConstants.ApiPaths.USERS_PATH)
@@ -148,6 +168,7 @@ class RouterRestTest {
     }
 
     @Test
+    @WithMockUser(authorities = "ADMIN")
     void findUserByIdNumber_shouldReturnOk_whenUserIsFound() {
         String idNumber = "123456789";
         User useCaseResponse = User.builder()
@@ -174,6 +195,7 @@ class RouterRestTest {
     }
 
     @Test
+    @WithMockUser(authorities = "ADMIN")
     void findUserByIdNumber_shouldReturnNotFound_whenUserDoesNotExist() {
         String idNumber = "999999999";
         when(userUseCase.findByIdNumber(idNumber)).thenReturn(Mono.empty());

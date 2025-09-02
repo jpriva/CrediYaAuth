@@ -2,8 +2,12 @@ package co.com.pragma.api;
 
 import co.com.pragma.api.constants.ApiConstants;
 import co.com.pragma.api.dto.ErrorDTO;
+import co.com.pragma.api.dto.LoginRequestDTO;
+import co.com.pragma.api.dto.LoginResponseDTO;
 import co.com.pragma.api.dto.UserRequestDTO;
 import co.com.pragma.api.mapper.UserMapper;
+import co.com.pragma.model.jwt.gateways.JwtProviderPort;
+import co.com.pragma.usecase.auth.AuthUseCase;
 import co.com.pragma.usecase.user.UserUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -22,6 +26,8 @@ import static co.com.pragma.model.constants.ErrorMessage.USER_NOT_FOUND_CODE;
 @RequiredArgsConstructor
 public class Handler {
     private final UserUseCase userUseCase;
+    private final AuthUseCase authUseCase;
+    private final JwtProviderPort jwtProvider;
     private final UserMapper userMapper;
 
     public Mono<ServerResponse> listenPOSTSaveUserUseCase(ServerRequest serverRequest) {
@@ -40,7 +46,7 @@ public class Handler {
         String idNumber = serverRequest.pathVariable(ApiConstants.ApiParams.ID_NUMBER_PARAM);
         return userUseCase.findByIdNumber(idNumber)
                 .map(userMapper::toResponseDto)
-                .flatMap(userDto->
+                .flatMap(userDto ->
                         ServerResponse.ok()
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .bodyValue(userDto)
@@ -56,5 +62,17 @@ public class Handler {
                             .contentType(MediaType.APPLICATION_JSON)
                             .bodyValue(errorDto);
                 }));
+    }
+
+    public Mono<ServerResponse> listenPOSTLoginUseCase(ServerRequest serverRequest) {
+        return serverRequest.bodyToMono(LoginRequestDTO.class)
+                .flatMap(loginRequest -> authUseCase.authenticate(loginRequest.getEmail(), loginRequest.getPassword()))
+                .flatMap(authenticatedUser -> {
+                    String token = jwtProvider.generateToken(authenticatedUser);
+                    LoginResponseDTO loginResponse = LoginResponseDTO.builder().token(token).email(authenticatedUser.getEmail()).build();
+                    return ServerResponse.ok()
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .bodyValue(loginResponse);
+                });
     }
 }

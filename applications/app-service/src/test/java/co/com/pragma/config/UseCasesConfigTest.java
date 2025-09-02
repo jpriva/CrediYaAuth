@@ -1,6 +1,7 @@
 package co.com.pragma.config;
 
 import co.com.pragma.model.logs.gateways.LoggerPort;
+import co.com.pragma.model.password.gateways.PasswordEncoderPort;
 import co.com.pragma.model.transaction.gateways.TransactionalPort;
 import co.com.pragma.model.role.gateways.RoleRepository;
 import co.com.pragma.model.user.gateways.UserRepository;
@@ -35,6 +36,10 @@ class UseCasesConfigTest {
     @Configuration
     @Import(UseCasesConfig.class)
     static class TestConfig {
+        @Bean
+        public PasswordEncoderPort passwordEncoder() {
+            return Mockito.mock(PasswordEncoderPort.class);
+        }
 
         @Bean
         public UserRepository userRepository() {

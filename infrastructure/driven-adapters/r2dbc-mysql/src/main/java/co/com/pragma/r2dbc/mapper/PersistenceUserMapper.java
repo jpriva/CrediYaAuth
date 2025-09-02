@@ -10,8 +10,10 @@ public interface PersistenceUserMapper {
     @Mapping(source = "rolId", target = "role.rolId")
     @Mapping(target = "role.name", ignore = true)
     @Mapping(target = "role.description", ignore = true)
+    @Mapping(target = "password", ignore = true) // Never map password from DB to domain
     User toDomain(UserEntity userEntity);
 
     @Mapping(source = "role.rolId", target = "rolId")
+    @Mapping(target = "password", source = "password") // Map password from domain to entity
     UserEntity toEntity(User user);
 }

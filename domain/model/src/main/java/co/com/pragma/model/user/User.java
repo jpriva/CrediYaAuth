@@ -8,6 +8,7 @@ import java.time.LocalDate;
 
 @Getter
 @Setter
+@EqualsAndHashCode
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder(toBuilder = true)
@@ -22,4 +23,5 @@ public class User {
     private String phone;
     private String address;
     private LocalDate birthDate;
+    private String password;
 }

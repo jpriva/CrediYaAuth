@@ -1,4 +1,4 @@
-package co.com.pragma.api.config;
+package co.com.pragma.api.config.documentation;
 
 import co.com.pragma.api.Handler;
 import co.com.pragma.api.constants.ApiConstants;
