@@ -15,4 +15,8 @@ public class LogMessages {
     public static final String PASSWORD_MISMATCH = "Authentication failed due to password mismatch for email: {}";
     public static final String USER_NOT_FOUND_FOR_AUTH = "Authentication failed because user was not found for email: {}";
     public static final String GLOBAL_EXCEPTION_HANDLER_ERROR = "An error occurred for request [{}]:";
+    public static final String USER_NOT_FOUND_FOR_EMAIL = "User not found for email: {}";
+    public static final String USER_WITH_EMAIL_FOUND = "User with email {} found";
+    public static final String FINDING_USERS_BY_EMAILS = "Finding users with emails: {}";
+    public static final String ERROR_FINDING_USERS_BY_EMAILS = "An error occurred while finding users with emails: {}";
 }

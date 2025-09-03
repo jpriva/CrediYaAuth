@@ -15,7 +15,10 @@ import co.com.pragma.model.user.User;
 import co.com.pragma.model.user.gateways.UserRepository;
 import co.com.pragma.usecase.user.utils.UserUtils;
 import lombok.RequiredArgsConstructor;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.List;
 
 @RequiredArgsConstructor
 public class UserUseCase {
@@ -46,6 +49,13 @@ public class UserUseCase {
                 .doFirst(() -> logger.info(LogMessages.FINDING_USER_BY_ID_NUMBER, idNumber))
                 .doOnError(ex -> logger.error(LogMessages.ERROR_FINDING_USER_BY_ID_NUMBER, idNumber, ex))
                 .doOnNext(user -> logger.info(LogMessages.USER_WITH_ID_NUMBER_FOUND, user.getUserId()));
+    }
+
+    public Flux<User> findUsersByEmail(List<String> emails) {
+        return userRepository.findAllByEmail(emails)
+                .doFirst(() -> logger.info(LogMessages.FINDING_USERS_BY_EMAILS, emails))
+                .doOnError(ex -> logger.error(LogMessages.ERROR_FINDING_USERS_BY_EMAILS, emails, ex))
+                .doOnNext(user -> logger.info(LogMessages.USER_WITH_EMAIL_FOUND, user.getEmail()));
     }
 
     // START Private methods ***********************************************************

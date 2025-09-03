@@ -17,8 +17,10 @@ public class ApiConstants {
         public static final String SWAGGER_PATH = "/swagger-ui.html";
         public static final String BASE_PATH = "/api/v1";
         public static final String USERS_PATH = BASE_PATH + "/usuarios";
+        public static final String SEARCHES_PATH = BASE_PATH + "/busquedas";
         public static final String LOGIN_PATH = BASE_PATH + "/login";
         public static final String USER_BY_ID_NUMBER_PATH = USERS_PATH + "/{"+ApiParams.ID_NUMBER_PARAM+"}";
+        public static final String USERS_BY_EMAIL_PATH = SEARCHES_PATH + "/por-emails";
     }
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -27,21 +29,32 @@ public class ApiConstants {
         public static final String LOGIN_MATCHER = ApiPaths.LOGIN_PATH + "/**";
         public static final String API_DOCS_MATCHER = "/v3/api-docs/**";
         public static final String SWAGGER_UI_MATCHER = "/swagger-ui/**";
-        public static final String WEB_JARS_MATCHER = "/webjars/**";
         //ADMIN/ASESOR
         public static final String USER_MATCHER = ApiPaths.USERS_PATH + "/**";
+        //ASESOR
+        public static final String SEARCHES_MATCHER = ApiPaths.SEARCHES_PATH + "/**";
         //TEST ENDPOINT
         public static final String TEST_MATCHER = "/test-endpoint";
+        public static final String DUMMY_USER_DOC_ROUTE = "/dummy-user-doc-route";
+        public static final String DUMMY_AUTH_DOC_ROUTE = "/dummy-auth-doc-route";
 
     }
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
     public static final class Operations {
         public static final String SAVE_USER_OPERATION_ID = "saveUser";
+        public static final String SAVE_USER_SUMMARY = "Save a new user";
+        public static final String SAVE_USER_DESCRIPTION = "Creates a new user. Requires ADMIN or ADVISOR role.";
         public static final String LOGIN_OPERATION_ID = "login";
         public static final String LOGIN_REQUEST_BODY_DESC = "User credentials for authentication";
         public static final String SAVE_USER_REQUEST_BODY_DESC = "User Requested Data";
+        public static final String FIND_USERS_BY_EMAIL_OPERATION_ID = "findUsersByEmail";
+        public static final String FIND_USERS_BY_EMAIL_SUMMARY = "Find users by a list of emails";
+        public static final String FIND_USERS_BY_EMAIL_DESCRIPTION = "Retrieves a list of users matching the provided emails. Requires ADVISOR role.";
+        public static final String FIND_USERS_BY_EMAIL_REQUEST_BODY_DESC = "A JSON array of user emails to search for.";
         public static final String FIND_USER_BY_ID_NUMBER_OPERATION_ID = "findUserByIdNumber";
+        public static final String FIND_USER_BY_ID_NUMBER_SUMMARY = "Find a user by their ID number";
+        public static final String FIND_USER_BY_ID_NUMBER_DESCRIPTION = "Retrieves a single user's details. Requires ADMIN or ADVISOR role.";
     }
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -51,14 +64,16 @@ public class ApiConstants {
         public static final String SAVE_USER_BAD_REQUEST_DESC = "Invalid request (e.g. missing or incorrectly formatted data)";
         public static final String BAD_REQUEST_CODE = "400";
         public static final String SAVE_USER_CONFLICT_DESC = "Data conflict (e.g. email already exists)";
+        public static final String FIND_USERS_BY_EMAIL_SUCCESS_DESC = "Successfully retrieved users matching the provided emails.";
         public static final String LOGIN_SUCCESS_DESC = "Authentication successful, JWT returned";
         public static final String LOGIN_BAD_REQUEST_DESC = "Invalid request (e.g. missing email or password)";
         public static final String CONFLICT_CODE = "409";
         public static final String FIND_USER_SUCCESS_DESC = "User Found Successfully";
-        public static final String SUCCESS_OK_CODE = "200";
         public static final String FIND_USER_BY_ID_NUMBER_NOT_FOUND_DESC = "User with provided ID not found";
+        public static final String SUCCESS_OK_CODE = "200";
         public static final String NOT_FOUND_CODE = "404";
         public static final String UNAUTHORIZED_CODE = "401";
+        public static final String BAD_REQUEST_DESC = "Bad Request";
     }
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -151,5 +166,13 @@ public class ApiConstants {
         public static final String TITLE_API = "Crediya Auth API Microservice";
         public static final String VERSION_API = "1.0.0";
         public static final String DESCRIPTION_API = "This is the API for Crediya Auth Microservice";
+    }
+
+    @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    public static final class UsersByEmailRequest {
+        public static final String NAME_DTO = "UsersByEmailRequest";
+        public static final String DESCRIPTION_DTO = "Request object containing a list of emails to search for.";
+        public static final String DESCRIPTION_EMAILS = "A list of user emails to find.";
+        public static final String EXAMPLE_EMAILS = "[\"user1@example.com\", \"user2@example.com\"]";
     }
 }

@@ -23,6 +23,9 @@ public class RouterRest {
         ).andRoute(
                 GET(ApiConstants.ApiPaths.USER_BY_ID_NUMBER_PATH),
                 handler::listenGETUserByIdNumberUseCase
+        ).andRoute(
+                POST(ApiConstants.ApiPaths.USERS_BY_EMAIL_PATH),
+                handler::listenPOSTUsersByEmailUseCase
         );
     }
 }

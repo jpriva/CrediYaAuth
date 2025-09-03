@@ -1,23 +1,23 @@
 package co.com.pragma.api;
 
 import co.com.pragma.api.constants.ApiConstants;
-import co.com.pragma.api.dto.ErrorDTO;
-import co.com.pragma.api.dto.LoginRequestDTO;
-import co.com.pragma.api.dto.LoginResponseDTO;
-import co.com.pragma.api.dto.UserRequestDTO;
+import co.com.pragma.api.dto.*;
 import co.com.pragma.api.mapper.UserMapper;
 import co.com.pragma.model.jwt.gateways.JwtProviderPort;
 import co.com.pragma.usecase.auth.AuthUseCase;
 import co.com.pragma.usecase.user.UserUseCase;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.Instant;
+import java.util.List;
 
 import static co.com.pragma.model.constants.ErrorMessage.USER_NOT_FOUND;
 import static co.com.pragma.model.constants.ErrorMessage.USER_NOT_FOUND_CODE;
@@ -74,5 +74,16 @@ public class Handler {
                             .contentType(MediaType.APPLICATION_JSON)
                             .bodyValue(loginResponse);
                 });
+    }
+
+    public Mono<ServerResponse> listenPOSTUsersByEmailUseCase(ServerRequest serverRequest) {
+        Flux<UserResponseDTO> usersFlux = serverRequest
+                .bodyToMono(new ParameterizedTypeReference<List<String>>() {})
+                .flatMapMany(userUseCase::findUsersByEmail)
+                .map(userMapper::toResponseDto);
+
+        return ServerResponse.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(usersFlux, UserResponseDTO.class);
     }
 }

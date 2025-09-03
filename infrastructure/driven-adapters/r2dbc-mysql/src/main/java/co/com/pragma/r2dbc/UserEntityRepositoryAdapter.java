@@ -8,7 +8,10 @@ import co.com.pragma.r2dbc.mapper.PersistenceUserMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Repository;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.List;
 
 
 @Repository
@@ -43,5 +46,10 @@ public class UserEntityRepositoryAdapter implements UserRepository {
     public Mono<User> findWithPasswordByEmail(String email) {
         return userRepository.findOne(Example.of(UserEntity.builder().email(email).build()))
                 .map(entity ->userMapper.toDomain(entity).toBuilder().password(entity.getPassword()).build());
+    }
+
+    @Override
+    public Flux<User> findAllByEmail(List<String> emails) {
+        return userRepository.findAllByEmailIn(emails).map(userMapper::toDomain);
     }
 }
