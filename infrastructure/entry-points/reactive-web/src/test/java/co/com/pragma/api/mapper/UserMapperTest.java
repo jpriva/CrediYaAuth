@@ -25,7 +25,7 @@ class UserMapperTest {
 
     @Test
     void toDomain_whenUserRequestDTOIsNull_shouldReturnNull() {
-        User user = userMapper.toDomain(null);
+        User user = userMapper.toDomain((UserRequestDTO) null);
 
         assertNull(user);
     }

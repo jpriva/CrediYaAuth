@@ -4,6 +4,7 @@ import co.com.pragma.model.exceptions.*;
 import co.com.pragma.model.role.Role;
 import co.com.pragma.model.user.User;
 import co.com.pragma.model.constants.DefaultValues;
+import co.com.pragma.model.user.filters.UserFilter;
 import co.com.pragma.usecase.utils.ValidationUtils;
 import reactor.core.publisher.Mono;
 
@@ -111,6 +112,19 @@ public class UserUtils {
      */
     private static boolean isRoleReferenceMissing(Role role) {
         return role == null || (role.getRolId() == null && (role.getName() == null || role.getName().isBlank()));
+    }
+
+    public static Mono<UserFilter> validateFilter(UserFilter filter) {
+        return Mono.justOrEmpty(filter)
+                .then(Mono.defer(() -> ValidationUtils.validateCondition(
+                                filter.getSalaryGreaterThan() != null ||
+                                        filter.getSalaryLowerThan() != null ||
+                                        filter.getName() != null ||
+                                        filter.getEmail() != null ||
+                                        filter.getIdNumber() != null,
+                                FilterEmptyException::new)
+                        )
+                ).thenReturn(filter);
     }
 
 }

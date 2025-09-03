@@ -3,6 +3,7 @@ package co.com.pragma.api.config.documentation;
 import co.com.pragma.api.Handler;
 import co.com.pragma.api.constants.ApiConstants;
 import co.com.pragma.api.dto.ErrorDTO;
+import co.com.pragma.api.dto.FindUsersRequestDTO;
 import co.com.pragma.api.dto.UserRequestDTO;
 import co.com.pragma.api.dto.UserResponseDTO;
 import co.com.pragma.model.constants.ErrorMessage;
@@ -119,6 +120,30 @@ public class UserDocumentationConfig {
                             responses = {
                                     @ApiResponse(responseCode = ApiConstants.Responses.SUCCESS_OK_CODE, description = ApiConstants.Responses.FIND_USERS_BY_EMAIL_SUCCESS_DESC,
                                             content = @Content(array = @ArraySchema(schema = @Schema(implementation = UserResponseDTO.class)))
+                                    ),
+                                    @ApiResponse(responseCode = ApiConstants.Responses.BAD_REQUEST_CODE, description = ApiConstants.Responses.BAD_REQUEST_DESC, content = @Content(schema = @Schema(implementation = ErrorDTO.class)))
+                            }
+                    )
+            ),
+            @RouterOperation(
+                    path = ApiConstants.ApiPaths.USER_EMAILS_BY_FILTER_PATH,
+                    produces = {MediaType.APPLICATION_JSON_VALUE},
+                    method = RequestMethod.POST,
+                    beanClass = Handler.class,
+                    beanMethod = "listenPOSTFindUserEmailsByFilterUseCase",
+                    operation = @Operation(
+                            operationId = ApiConstants.Operations.FIND_USER_EMAILS_BY_FILTER_OPERATION_ID,
+                            summary = ApiConstants.Operations.FIND_USER_EMAILS_BY_FILTER_SUMMARY,
+                            description = ApiConstants.Operations.FIND_USER_EMAILS_BY_FILTER_DESCRIPTION,
+                            security = @SecurityRequirement(name = ApiConstants.ApiConfig.NAME_BEARER_AUTH),
+                            requestBody = @RequestBody(
+                                    content = @Content(schema = @Schema(implementation = FindUsersRequestDTO.class)),
+                                    required = true,
+                                    description = ApiConstants.Operations.FIND_USER_EMAILS_BY_FILTER_REQUEST_BODY_DESC
+                            ),
+                            responses = {
+                                    @ApiResponse(responseCode = ApiConstants.Responses.SUCCESS_OK_CODE, description = ApiConstants.Responses.FIND_USER_EMAILS_BY_FILTER_SUCCESS_DESC,
+                                            content = @Content(array = @ArraySchema(schema = @Schema(implementation = String.class, example = "user.found@example.com")))
                                     ),
                                     @ApiResponse(responseCode = ApiConstants.Responses.BAD_REQUEST_CODE, description = ApiConstants.Responses.BAD_REQUEST_DESC, content = @Content(schema = @Schema(implementation = ErrorDTO.class)))
                             }

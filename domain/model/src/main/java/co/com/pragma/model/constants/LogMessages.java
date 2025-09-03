@@ -11,12 +11,13 @@ public class LogMessages {
     public static final String USER_WITH_ID_NUMBER_FOUND = "User with ID number found: {}";
     public static final String ERROR_FINDING_USER_BY_ID_NUMBER = "Error finding user by ID number: {}";
     public static final String ERROR_FINDING_USER_BY_EMAIL = "Error finding user by email: {}";
-    public static final String ERROR_FINDING_ROLE = "Error finding role";
-    public static final String PASSWORD_MISMATCH = "Authentication failed due to password mismatch for email: {}";
     public static final String USER_NOT_FOUND_FOR_AUTH = "Authentication failed because user was not found for email: {}";
     public static final String GLOBAL_EXCEPTION_HANDLER_ERROR = "An error occurred for request [{}]:";
-    public static final String USER_NOT_FOUND_FOR_EMAIL = "User not found for email: {}";
     public static final String USER_WITH_EMAIL_FOUND = "User with email {} found";
     public static final String FINDING_USERS_BY_EMAILS = "Finding users with emails: {}";
     public static final String ERROR_FINDING_USERS_BY_EMAILS = "An error occurred while finding users with emails: {}";
+    public static final String FINDING_USERS = "Finding users by example";
+    public static final String ERROR_FINDING_USERS = "Error finding users by example";
+    public static final String FINDING_USER_EMAILS = "Finding user emails";
+    public static final String ERROR_FINDING_USER_EMAILS = "Error finding user emails";
 }

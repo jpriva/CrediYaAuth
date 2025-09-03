@@ -1,13 +1,18 @@
 package co.com.pragma.r2dbc;
 
 import co.com.pragma.model.user.User;
+import co.com.pragma.model.user.filters.UserFilter;
 import co.com.pragma.model.user.gateways.UserRepository;
 import co.com.pragma.r2dbc.entity.UserEntity;
-import co.com.pragma.r2dbc.mapper.PersistenceRoleMapper;
 import co.com.pragma.r2dbc.mapper.PersistenceUserMapper;
+import co.com.pragma.r2dbc.util.EntityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Example;
+import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
+import org.springframework.data.relational.core.query.Criteria;
+import org.springframework.data.relational.core.query.Query;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.StringUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -19,15 +24,17 @@ import java.util.List;
 public class UserEntityRepositoryAdapter implements UserRepository {
 
     private final UserEntityRepository userRepository;
-    private final RoleEntityRepository roleRepository;
     private final PersistenceUserMapper userMapper;
-    private final PersistenceRoleMapper roleMapper;
+    private final R2dbcEntityTemplate entityTemplate;
 
     @Override
     public Mono<User> save(User user) {
         return userRepository.save(userMapper.toEntity(user))
-                .map(savedEntity ->
-                        user.toBuilder().userId(savedEntity.getUserId()).build()
+                .map(userMapper::toDomain)
+                .map(savedDomainUser ->
+                        savedDomainUser.toBuilder()
+                                .role(user.getRole())
+                                .build()
                 );
     }
 
@@ -44,12 +51,60 @@ public class UserEntityRepositoryAdapter implements UserRepository {
 
     @Override
     public Mono<User> findWithPasswordByEmail(String email) {
-        return userRepository.findOne(Example.of(UserEntity.builder().email(email).build()))
-                .map(entity ->userMapper.toDomain(entity).toBuilder().password(entity.getPassword()).build());
+        return userRepository.findByEmail(email)
+                .map(entity -> userMapper.toDomain(entity).toBuilder().password(entity.getPassword()).build());
     }
 
     @Override
     public Flux<User> findAllByEmail(List<String> emails) {
         return userRepository.findAllByEmailIn(emails).map(userMapper::toDomain);
+    }
+
+    @Override
+    public Flux<User> findUsersByFilter(UserFilter filter) {
+        Criteria criteria = buildCriteria(filter);
+
+        return entityTemplate.select(UserEntity.class)
+                .from(EntityUtils.USER_TABLE_NAME)
+                .matching(Query.query(criteria))
+                .all()
+                .map(userMapper::toDomain);
+    }
+
+    @Override
+    public Flux<String> findUserEmailsByFilter(UserFilter filter) {
+        Criteria criteria = buildCriteria(filter);
+
+        return entityTemplate.select(UserEntity.class)
+                .from(EntityUtils.USER_TABLE_NAME)
+                .matching(Query.query(criteria).columns(EntityUtils.EMAIL_COLUMN_NAME))
+                .all()
+                .map(UserEntity::getEmail);
+    }
+
+    private Criteria buildCriteria(UserFilter filter) {
+        Criteria criteria = Criteria.empty();
+
+        if (StringUtils.hasText(filter.getIdNumber())) {
+            criteria = criteria.and(EntityUtils.ID_NUMBER_COLUMN_NAME).like(EntityUtils.addWildcard(filter.getIdNumber())).ignoreCase(true);
+        }
+        if (StringUtils.hasText(filter.getName())) {
+            String[] nameParts = filter.getName().split("\\s+");
+            for (String part : nameParts) {
+                Criteria namePartCriteria = Criteria.where(EntityUtils.NAME_COLUMN_NAME).like(EntityUtils.addWildcard(part)).ignoreCase(true)
+                        .or(EntityUtils.LAST_NAME_COLUMN_NAME).like(EntityUtils.addWildcard(part)).ignoreCase(true);
+                criteria = criteria.and(namePartCriteria);
+            }
+        }
+        if (StringUtils.hasText(filter.getEmail())) {
+            criteria = criteria.and(EntityUtils.EMAIL_COLUMN_NAME).like(EntityUtils.addWildcard(filter.getEmail())).ignoreCase(true);
+        }
+        if (filter.getSalaryGreaterThan() != null) {
+            criteria = criteria.and(EntityUtils.SALARY_COLUMN_NAME).greaterThan(filter.getSalaryGreaterThan());
+        }
+        if (filter.getSalaryLowerThan() != null) {
+            criteria = criteria.and(EntityUtils.SALARY_COLUMN_NAME).lessThan(filter.getSalaryLowerThan());
+        }
+        return criteria;
     }
 }

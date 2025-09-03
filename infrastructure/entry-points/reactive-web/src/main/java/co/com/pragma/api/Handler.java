@@ -86,4 +86,20 @@ public class Handler {
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(usersFlux, UserResponseDTO.class);
     }
+
+    public Mono<ServerResponse> listenPOSTFindUserEmailsByFilterUseCase(ServerRequest serverRequest) {
+        Mono<List<String>> emailsListMono = serverRequest
+                .bodyToMono(FindUsersRequestDTO.class)
+                .map(userMapper::toUserFilter)
+                .flatMapMany(userUseCase::findUserEmailsByFilter)
+                .distinct()
+                .collectList();
+
+        return emailsListMono
+                .flatMap(emails ->
+                        ServerResponse.ok()
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .bodyValue(emails)
+                );
+    }
 }

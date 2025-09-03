@@ -26,6 +26,9 @@ public class RouterRest {
         ).andRoute(
                 POST(ApiConstants.ApiPaths.USERS_BY_EMAIL_PATH),
                 handler::listenPOSTUsersByEmailUseCase
+        ).andRoute(
+                POST(ApiConstants.ApiPaths.USER_EMAILS_BY_FILTER_PATH),
+                     handler::listenPOSTFindUserEmailsByFilterUseCase
         );
     }
 }

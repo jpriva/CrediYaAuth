@@ -1,9 +1,13 @@
 package co.com.pragma.model.constants;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ErrorMessage {
 
-
-    private ErrorMessage() {}
+    public static final String FILTER_IS_EMPTY_CODE = "F001";
+    public static final String FILTER_IS_EMPTY = "Filter is empty.";
 
     public static final String USER_NOT_FOUND_CODE = "U001";
     public static final String USER_NOT_FOUND = "User not found.";
