@@ -17,6 +17,8 @@ public interface UserRepository {
 
     Mono<User> findWithPasswordByEmail(String email);
 
+    Mono<User> findByEmail(String email);
+
     Flux<User> findAllByEmail(List<String> email);
 
     Flux<User> findUsersByFilter(UserFilter filter);

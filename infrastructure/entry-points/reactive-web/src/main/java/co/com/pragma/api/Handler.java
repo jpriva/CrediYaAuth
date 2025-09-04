@@ -2,8 +2,10 @@ package co.com.pragma.api;
 
 import co.com.pragma.api.constants.ApiConstants;
 import co.com.pragma.api.dto.*;
+import co.com.pragma.api.mapper.FilterMapper;
 import co.com.pragma.api.mapper.UserMapper;
 import co.com.pragma.model.jwt.gateways.JwtProviderPort;
+import co.com.pragma.model.user.filters.UserFilter;
 import co.com.pragma.usecase.auth.AuthUseCase;
 import co.com.pragma.usecase.user.UserUseCase;
 import lombok.RequiredArgsConstructor;
@@ -76,10 +78,10 @@ public class Handler {
                 });
     }
 
-    public Mono<ServerResponse> listenPOSTUsersByEmailUseCase(ServerRequest serverRequest) {
+    public Mono<ServerResponse> listenPOSTUsersByEmailsUseCase(ServerRequest serverRequest) {
         Flux<UserResponseDTO> usersFlux = serverRequest
                 .bodyToMono(new ParameterizedTypeReference<List<String>>() {})
-                .flatMapMany(userUseCase::findUsersByEmail)
+                .flatMapMany(userUseCase::findUsersByEmails)
                 .map(userMapper::toResponseDto);
 
         return ServerResponse.ok()
@@ -101,5 +103,38 @@ public class Handler {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .bodyValue(emails)
                 );
+    }
+
+    public Mono<ServerResponse> listenGETUserByEmailUseCase(ServerRequest serverRequest) {
+        String email = serverRequest.pathVariable(ApiConstants.ApiParams.EMAIL_PARAM);
+        return userUseCase.findByEmail(email)
+                .map(userMapper::toResponseDto)
+                .flatMap(userDto ->
+                        ServerResponse.ok()
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .bodyValue(userDto)
+                )
+                .switchIfEmpty(Mono.defer(() -> {
+                    ErrorDTO errorDto = ErrorDTO.builder()
+                            .timestamp(Instant.now())
+                            .path(serverRequest.path())
+                            .code(USER_NOT_FOUND_CODE)
+                            .message(USER_NOT_FOUND)
+                            .build();
+                    return ServerResponse.status(HttpStatus.NOT_FOUND)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .bodyValue(errorDto);
+                }));
+    }
+
+    public Mono<ServerResponse> listenGETUsersByFilterUseCase(ServerRequest serverRequest) {
+        UserFilter filter = FilterMapper.toFilter(serverRequest.queryParams());
+        Flux<UserResponseDTO> usersFlux = userUseCase.findUsersByFilter(filter)
+                .distinct()
+                .map(userMapper::toResponseDto);
+        return usersFlux.collectList()
+                .flatMap(userList -> ServerResponse.ok()
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .bodyValue(userList));
     }
 }

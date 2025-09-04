@@ -10,6 +10,10 @@ public class ApiConstants {
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
     public static final class ApiParams {
         public static final String ID_NUMBER_PARAM = "idNumber";
+        public static final String EMAIL_PARAM = "email";
+        public static final String NAME_PARAM = "name";
+        public static final String MIN_BASE_SALARY_PARAM = "minBaseSalary";
+        public static final String MAX_BASE_SALARY_PARAM = "maxBaseSalary";
     }
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -18,10 +22,12 @@ public class ApiConstants {
         public static final String BASE_PATH = "/api/v1";
         public static final String USERS_PATH = BASE_PATH + "/usuarios";
         public static final String SEARCHES_PATH = BASE_PATH + "/busquedas";
+        public static final String USERS_BY_FILTER_PATH = SEARCHES_PATH + "/filtro";
         public static final String LOGIN_PATH = BASE_PATH + "/login";
         public static final String USER_BY_ID_NUMBER_PATH = USERS_PATH + "/{"+ApiParams.ID_NUMBER_PARAM+"}";
         public static final String USERS_BY_EMAIL_PATH = SEARCHES_PATH + "/emails";
         public static final String USER_EMAILS_BY_FILTER_PATH = SEARCHES_PATH + "/filtro";
+        public static final String USER_BY_EMAIL_PATH = SEARCHES_PATH + "/email/{"+ApiParams.EMAIL_PARAM+"}";
     }
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)

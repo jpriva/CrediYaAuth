@@ -106,7 +106,7 @@ public class UserDocumentationConfig {
                     produces = {MediaType.APPLICATION_JSON_VALUE},
                     method = RequestMethod.POST,
                     beanClass = Handler.class,
-                    beanMethod = "listenPOSTUsersByEmailUseCase",
+                    beanMethod = "listenPOSTUsersByEmailsUseCase",
                     operation = @Operation(
                             operationId = ApiConstants.Operations.FIND_USERS_BY_EMAIL_OPERATION_ID,
                             summary = ApiConstants.Operations.FIND_USERS_BY_EMAIL_SUMMARY,

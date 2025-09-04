@@ -54,7 +54,7 @@ public class UserUseCase {
                 .doOnNext(user -> logger.info(LogMessages.USER_WITH_ID_NUMBER_FOUND, user.getUserId()));
     }
 
-    public Flux<User> findUsersByEmail(List<String> emails) {
+    public Flux<User> findUsersByEmails(List<String> emails) {
         return userRepository.findAllByEmail(emails)
                 .doFirst(() -> logger.info(LogMessages.FINDING_USERS_BY_EMAILS, emails))
                 .doOnError(ex -> logger.error(LogMessages.ERROR_FINDING_USERS_BY_EMAILS, emails, ex))
@@ -66,6 +66,10 @@ public class UserUseCase {
                 .flatMapMany(userRepository::findUsersByFilter)
                 .doFirst(() -> logger.info(LogMessages.FINDING_USERS))
                 .doOnError(ex -> logger.error(LogMessages.ERROR_FINDING_USERS, ex));
+    }
+
+    public Mono<User> findByEmail(String email) {
+        return userRepository.findByEmail(email);
     }
 
     public Flux<String> findUserEmailsByFilter(UserFilter filter) {

@@ -12,7 +12,6 @@ import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import org.springframework.data.relational.core.query.Criteria;
 import org.springframework.data.relational.core.query.Query;
 import org.springframework.stereotype.Repository;
-import org.springframework.util.StringUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -62,7 +61,7 @@ public class UserEntityRepositoryAdapter implements UserRepository {
 
     @Override
     public Flux<User> findUsersByFilter(UserFilter filter) {
-        Criteria criteria = buildCriteria(filter);
+        Criteria criteria = EntityUtils.buildCriteria(filter);
 
         return entityTemplate.select(UserEntity.class)
                 .from(EntityUtils.USER_TABLE_NAME)
@@ -73,7 +72,7 @@ public class UserEntityRepositoryAdapter implements UserRepository {
 
     @Override
     public Flux<String> findUserEmailsByFilter(UserFilter filter) {
-        Criteria criteria = buildCriteria(filter);
+        Criteria criteria = EntityUtils.buildCriteria(filter);
 
         return entityTemplate.select(UserEntity.class)
                 .from(EntityUtils.USER_TABLE_NAME)
@@ -82,29 +81,8 @@ public class UserEntityRepositoryAdapter implements UserRepository {
                 .map(UserEntity::getEmail);
     }
 
-    private Criteria buildCriteria(UserFilter filter) {
-        Criteria criteria = Criteria.empty();
-
-        if (StringUtils.hasText(filter.getIdNumber())) {
-            criteria = criteria.and(EntityUtils.ID_NUMBER_COLUMN_NAME).like(EntityUtils.addWildcard(filter.getIdNumber())).ignoreCase(true);
-        }
-        if (StringUtils.hasText(filter.getName())) {
-            String[] nameParts = filter.getName().split("\\s+");
-            for (String part : nameParts) {
-                Criteria namePartCriteria = Criteria.where(EntityUtils.NAME_COLUMN_NAME).like(EntityUtils.addWildcard(part)).ignoreCase(true)
-                        .or(EntityUtils.LAST_NAME_COLUMN_NAME).like(EntityUtils.addWildcard(part)).ignoreCase(true);
-                criteria = criteria.and(namePartCriteria);
-            }
-        }
-        if (StringUtils.hasText(filter.getEmail())) {
-            criteria = criteria.and(EntityUtils.EMAIL_COLUMN_NAME).like(EntityUtils.addWildcard(filter.getEmail())).ignoreCase(true);
-        }
-        if (filter.getSalaryGreaterThan() != null) {
-            criteria = criteria.and(EntityUtils.SALARY_COLUMN_NAME).greaterThan(filter.getSalaryGreaterThan());
-        }
-        if (filter.getSalaryLowerThan() != null) {
-            criteria = criteria.and(EntityUtils.SALARY_COLUMN_NAME).lessThan(filter.getSalaryLowerThan());
-        }
-        return criteria;
+    @Override
+    public Mono<User> findByEmail(String email) {
+        return userRepository.findByEmail(email).map(userMapper::toDomain);
     }
 }

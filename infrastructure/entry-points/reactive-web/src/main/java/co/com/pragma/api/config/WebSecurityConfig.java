@@ -80,7 +80,7 @@ public class WebSecurityConfig {
                     JwtData jwtData = jwtProvider.getClaims(authToken);
                     String email = jwtData.subject();
                     List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(jwtData.role()));
-                    Authentication auth = new UsernamePasswordAuthenticationToken(email, null, authorities);
+                    Authentication auth = new UsernamePasswordAuthenticationToken(email, authToken, authorities);
                     return Mono.just(new SecurityContextImpl(auth));
                 } catch (Exception e) {
                     return Mono.empty();
