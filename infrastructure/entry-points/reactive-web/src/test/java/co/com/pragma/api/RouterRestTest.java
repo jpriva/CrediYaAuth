@@ -1,22 +1,22 @@
 package co.com.pragma.api;
 
+import co.com.pragma.api.config.WebSecurityConfig;
 import co.com.pragma.api.constants.ApiConstants;
-import co.com.pragma.api.dto.ErrorDTO;
-import co.com.pragma.api.dto.RoleDTO;
-import co.com.pragma.api.dto.UserRequestDTO;
-import co.com.pragma.api.dto.UserResponseDTO;
+import co.com.pragma.api.dto.*;
 import co.com.pragma.api.exception.handler.CustomAccessDeniedHandler;
 import co.com.pragma.api.exception.handler.GlobalExceptionHandler;
-import co.com.pragma.api.config.WebSecurityConfig;
+import co.com.pragma.api.mapper.FilterMapper;
 import co.com.pragma.api.mapper.UserMapper;
 import co.com.pragma.model.constants.DefaultValues;
 import co.com.pragma.model.constants.ErrorMessage;
 import co.com.pragma.model.exceptions.EmailTakenException;
 import co.com.pragma.model.exceptions.FieldBlankException;
+import co.com.pragma.model.exceptions.InvalidCredentialsException;
 import co.com.pragma.model.jwt.gateways.JwtProviderPort;
 import co.com.pragma.model.logs.gateways.LoggerPort;
 import co.com.pragma.model.role.Role;
 import co.com.pragma.model.user.User;
+import co.com.pragma.model.user.filters.UserFilter;
 import co.com.pragma.usecase.auth.AuthUseCase;
 import co.com.pragma.usecase.user.UserUseCase;
 import org.assertj.core.api.Assertions;
@@ -30,11 +30,15 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import org.springframework.util.MultiValueMap;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ContextConfiguration(classes = {
@@ -58,6 +62,9 @@ class RouterRestTest {
     private UserMapper userMapper;
 
     @MockitoBean
+    private FilterMapper filterMapper;
+
+    @MockitoBean
     private AuthUseCase authUseCase;
 
     @MockitoBean
@@ -66,6 +73,7 @@ class RouterRestTest {
 
     private UserRequestDTO requestDto;
     private UserResponseDTO responseDto;
+    private User domainUser;
 
     @BeforeEach
     void setup() {
@@ -78,7 +86,15 @@ class RouterRestTest {
                 .baseSalary(new BigDecimal(5000000))
                 .build();
 
-        User domainUser = User.builder().email("john.doe@example.com").build();
+        domainUser = User.builder()
+                .name(requestDto.getName())
+                .lastName(requestDto.getLastName())
+                .email(requestDto.getEmail())
+                .idNumber(requestDto.getIdNumber())
+                .role(Role.builder().rolId(requestDto.getRolId()).build())
+                .baseSalary(requestDto.getBaseSalary())
+                .build();
+
         when(userMapper.toDomain(any(UserRequestDTO.class))).thenReturn(domainUser);
 
         responseDto = UserResponseDTO.builder()
@@ -93,6 +109,8 @@ class RouterRestTest {
     @Test
     @WithMockUser(authorities = "ADMIN")
     void saveUser_shouldReturnCreated_whenValidRequest() {
+        when(userMapper.toDomain(any(UserRequestDTO.class))).thenReturn(domainUser);
+
         User useCaseResponse = User.builder()
                 .userId(3)
                 .name("John")
@@ -210,5 +228,108 @@ class RouterRestTest {
                     Assertions.assertThat(error.getCode()).isEqualTo(ErrorMessage.USER_NOT_FOUND_CODE);
                     Assertions.assertThat(error.getMessage()).isEqualTo(ErrorMessage.USER_NOT_FOUND);
                 });
+    }
+
+    @Test
+    void login_shouldReturnOk_whenCredentialsAreValid() {
+        LoginRequestDTO loginRequest = new LoginRequestDTO("test@example.com", "password");
+        User authenticatedUser = User.builder().email("test@example.com").build();
+        String jwtToken = "fake.jwt.token";
+
+        when(authUseCase.authenticate(loginRequest.getEmail(), loginRequest.getPassword())).thenReturn(Mono.just(authenticatedUser));
+        when(jwtProvider.generateToken(authenticatedUser)).thenReturn(jwtToken);
+
+        webTestClient.post()
+                .uri(ApiConstants.ApiPaths.LOGIN_PATH)
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(loginRequest)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(LoginResponseDTO.class)
+                .value(response -> {
+                    Assertions.assertThat(response.getToken()).isEqualTo(jwtToken);
+                    Assertions.assertThat(response.getEmail()).isEqualTo(loginRequest.getEmail());
+                });
+    }
+
+    @Test
+    void login_shouldReturnUnauthorized_whenCredentialsAreInvalid() {
+        LoginRequestDTO loginRequest = new LoginRequestDTO("test@example.com", "wrong-password");
+        when(authUseCase.authenticate(any(String.class), any(String.class))).thenReturn(Mono.error(new InvalidCredentialsException()));
+
+        webTestClient.post()
+                .uri(ApiConstants.ApiPaths.LOGIN_PATH)
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(loginRequest)
+                .exchange()
+                .expectStatus().isUnauthorized();
+    }
+
+    @Test
+    @WithMockUser(authorities = "ASESOR")
+    void findUsersByEmails_shouldReturnOkWithUserList() {
+        List<String> emailList = List.of("john.doe@example.com");
+        when(userUseCase.findUsersByEmails(emailList)).thenReturn(Flux.just(User.builder().email("john.doe@example.com").build()));
+        when(userMapper.toResponseDto(any(User.class))).thenReturn(responseDto);
+
+        webTestClient.post()
+                .uri(ApiConstants.ApiPaths.USERS_BY_EMAIL_PATH)
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(emailList)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBodyList(UserResponseDTO.class)
+                .hasSize(1)
+                .value(users -> Assertions.assertThat(users.get(0).getEmail()).isEqualTo("john.doe@example.com"));
+    }
+
+    @Test
+    @WithMockUser(authorities = "ASESOR")
+    void findUserEmailsByFilter_shouldReturnOkWithEmailList() {
+        FindUsersRequestDTO filterRequest = new FindUsersRequestDTO();
+        UserFilter userFilter = UserFilter.builder().build();
+        List<String> emailList = List.of("test@example.com");
+        when(userMapper.toUserFilter(any(FindUsersRequestDTO.class))).thenReturn(userFilter);
+        when(userUseCase.findUserEmailsByFilter(any(UserFilter.class))).thenReturn(Flux.fromIterable(emailList));
+
+        webTestClient.post()
+                .uri(ApiConstants.ApiPaths.USER_EMAILS_BY_FILTER_PATH)
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(filterRequest)
+                .exchange()
+                .expectStatus().isOk();
+    }
+
+    @Test
+    @WithMockUser(authorities = "ASESOR")
+    void findUserByEmail_shouldReturnOk_whenUserIsFound() {
+        String email = "john.doe@example.com";
+        when(userUseCase.findByEmail(email)).thenReturn(Mono.just(User.builder().email(email).build()));
+        when(userMapper.toResponseDto(any(User.class))).thenReturn(responseDto);
+
+        webTestClient.get()
+                .uri(ApiConstants.ApiPaths.USER_BY_EMAIL_PATH, email)
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(UserResponseDTO.class)
+                .value(userResponse -> Assertions.assertThat(userResponse.getEmail()).isEqualTo(email));
+    }
+
+    @Test
+    @WithMockUser(authorities = "ASESOR")
+    void findUsersByFilter_shouldReturnOkWithUserList() {
+        MultiValueMap<String, String> mockMultiValueMap = mock(MultiValueMap.class);
+        when(filterMapper.toFilter(mockMultiValueMap)).thenReturn(UserFilter.builder().build());
+        when(userUseCase.findUsersByFilter(any(UserFilter.class))).thenReturn(Flux.just(User.builder().build()));
+        when(userMapper.toResponseDto(any(User.class))).thenReturn(responseDto);
+
+        webTestClient.get()
+                .uri(uriBuilder -> uriBuilder.path(ApiConstants.ApiPaths.USERS_BY_FILTER_PATH).queryParam("name", "John").build())
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBodyList(UserResponseDTO.class)
+                .hasSize(1);
     }
 }

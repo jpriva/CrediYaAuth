@@ -1,10 +1,12 @@
 package co.com.pragma.api.mapper;
 
+import co.com.pragma.api.dto.FindUsersRequestDTO;
 import co.com.pragma.api.dto.RoleDTO;
 import co.com.pragma.api.dto.UserRequestDTO;
 import co.com.pragma.api.dto.UserResponseDTO;
 import co.com.pragma.model.role.Role;
 import co.com.pragma.model.user.User;
+import co.com.pragma.model.user.filters.UserFilter;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +16,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(SpringExtension.class)
@@ -139,5 +142,29 @@ class UserMapperTest {
 
         assertNotNull(responseDTO);
         assertNull(responseDTO.getRole());
+    }
+
+    @Test
+    void toUserFilter_whenFindUserRequestDTONotNull_shouldMapToUserFilter(){
+        FindUsersRequestDTO request = FindUsersRequestDTO.builder()
+                .idNumber("123456789")
+                .email("john.doe@example.com")
+                .salaryLowerThan(new BigDecimal("50000"))
+                .salaryGreaterThan(new BigDecimal("20000"))
+                .name("John")
+                .build();
+        UserFilter userFilter = userMapper.toUserFilter(request);
+        assertNotNull(userFilter);
+        assertThat(userFilter.getIdNumber()).isEqualTo(request.getIdNumber());
+        assertThat(userFilter.getEmail()).isEqualTo(request.getEmail());
+        assertThat(userFilter.getSalaryGreaterThan()).isEqualTo(request.getSalaryGreaterThan());
+        assertThat(userFilter.getSalaryLowerThan()).isEqualTo(request.getSalaryLowerThan());
+        assertThat(userFilter.getName()).isEqualTo(request.getName());
+    }
+
+    @Test
+    void toUserFilter_whenFindUserRequestDTONull_shouldBeNull(){
+        UserFilter userFilter = userMapper.toUserFilter(null);
+        assertThat(userFilter).isNull();
     }
 }

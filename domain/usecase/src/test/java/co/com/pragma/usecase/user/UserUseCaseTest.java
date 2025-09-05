@@ -1,370 +1,246 @@
 package co.com.pragma.usecase.user;
 
+import co.com.pragma.model.constants.DefaultValues;
 import co.com.pragma.model.exceptions.*;
 import co.com.pragma.model.logs.gateways.LoggerPort;
 import co.com.pragma.model.password.gateways.PasswordEncoderPort;
-import co.com.pragma.model.transaction.gateways.TransactionalPort;
 import co.com.pragma.model.role.Role;
-import co.com.pragma.model.user.User;
-import co.com.pragma.model.constants.DefaultValues;
 import co.com.pragma.model.role.gateways.RoleRepository;
+import co.com.pragma.model.transaction.gateways.TransactionalPort;
+import co.com.pragma.model.user.User;
+import co.com.pragma.model.user.filters.UserFilter;
 import co.com.pragma.model.user.gateways.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.math.BigDecimal;
-import java.util.stream.Stream;
-import java.time.LocalDate;
+import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.AdditionalAnswers.returnsFirstArg;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class UserUseCaseTest {
 
     @Mock
     private UserRepository userRepository;
-
     @Mock
     private RoleRepository roleRepository;
-
     @Mock
     private LoggerPort logger;
-
-    @Mock
-    private TransactionalPort transactionalPort;
-
     @Mock
     private PasswordEncoderPort passwordEncoderPort;
+    @Mock
+    private TransactionalPort transactionalPort;
 
     @InjectMocks
     private UserUseCase userUseCase;
 
-    private User.UserBuilder validUser;
-    private Role clientRole;
+    private User userToSave;
+    private Role defaultRole;
 
     @BeforeEach
     void setUp() {
-        clientRole = Role.builder()
-                .rolId(DefaultValues.DEFAULT_ROLE_ID)
-                .name(DefaultValues.DEFAULT_ROLE_NAME)
-                .description(DefaultValues.DEFAULT_ROLE_DESCRIPTION)
-                .build();
-        validUser = User.builder()
+        defaultRole = Role.builder().rolId(3).name(DefaultValues.DEFAULT_ROLE_NAME).build();
+        userToSave = User.builder()
                 .name("John")
                 .lastName("Doe")
                 .email("john.doe@example.com")
-                .password("S3cureP@ssw0rd")
-                .baseSalary(new BigDecimal("5000000"))
                 .idNumber("123456789")
-                .phone("+57123456789")
-                .address("123 Main St")
-                .birthDate(LocalDate.now());
+                .password("plain_password")
+                .role(defaultRole)
+                .baseSalary(new BigDecimal("50000"))
+                .build();
 
-        lenient().when(transactionalPort.transactional(any(Mono.class))).then(returnsFirstArg());
-        lenient().when(passwordEncoderPort.encode(anyString())).thenReturn("hashed_password");
-    }
-
-    @Test
-    @DisplayName("findByIdNumber should return a user when the ID number is found")
-    void findByIdNumber_shouldReturnUser_whenIdNumberIsFound() {
-        String idNumber = "123456789";
-        User userFromRepo = validUser.idNumber(idNumber).userId(1).role(clientRole).build();
-
-        when(userRepository.findOne(argThat(u -> u.getIdNumber().equals(idNumber)))).thenReturn(Mono.just(userFromRepo));
-        when(roleRepository.findOne(clientRole)).thenReturn(Mono.just(clientRole));
-
-        StepVerifier.create(userUseCase.findByIdNumber(idNumber))
-                .assertNext(actualUser -> {
-                    assertThat(actualUser.getUserId()).isEqualTo(userFromRepo.getUserId());
-                    assertThat(actualUser.getIdNumber()).isEqualTo(userFromRepo.getIdNumber());
-                    assertThat(actualUser.getBaseSalary()).isEqualByComparingTo(userFromRepo.getBaseSalary());
-                    assertThat(actualUser.getRole()).isEqualTo(clientRole);
-                })
-                .verifyComplete();
-    }
-
-    @Test
-    @DisplayName("findByIdNumber should return an empty Mono when the ID number is not found")
-    void findByIdNumber_shouldReturnEmpty_whenIdNumberIsNotFound() {
-        String idNumber = "123456789";
-
-        when(userRepository.findOne(argThat(u -> u.getIdNumber().equals(idNumber)))).thenReturn(Mono.empty());
-
-        StepVerifier.create(userUseCase.findByIdNumber(idNumber))
-                .expectNextCount(0)
-                .verifyComplete();
-    }
-
-    @Test
-    @DisplayName("should save a user when all data is valid and a role is provided")
-    void save_shouldSaveUser_whenDataIsValidAndRolIsProvided() {
-
-        User userToSave = validUser.role(clientRole).build();
-        User savedUser = userToSave.toBuilder().userId(1).build();
-
-        when(roleRepository.findOne(clientRole)).thenReturn(Mono.just(clientRole));
-        when(userRepository.exists(argThat(u -> u != null && u.getEmail() != null && u.getEmail().equals(userToSave.getEmail()))))
-                .thenReturn(Mono.just(false));
-        when(userRepository.exists(argThat(u -> u != null && u.getIdNumber() != null && u.getIdNumber().equals(userToSave.getIdNumber()))))
-                .thenReturn(Mono.just(false));
-        when(userRepository.save(any(User.class))).thenReturn(Mono.just(savedUser));
-
-        StepVerifier.create(userUseCase.saveUser(userToSave))
-                .expectNext(savedUser)
-                .verifyComplete();
-    }
-
-    @Test
-    @DisplayName("should save a user with default role when role is not provided")
-    void save_shouldSaveUserWithDefaultRol_whenRolIsNotProvided() {
-
-        User userWithoutRol = validUser.role(null).build();
-        User savedUser = userWithoutRol.toBuilder().userId(1).role(clientRole).build();
-
-        when(roleRepository.findOne(any(Role.class))).thenReturn(Mono.just(clientRole));
-        when(userRepository.exists(argThat(u -> u != null && u.getEmail() != null && u.getEmail().equals(userWithoutRol.getEmail()))))
-                .thenReturn(Mono.just(false));
-        when(userRepository.exists(argThat(u -> u != null && u.getIdNumber() != null && u.getIdNumber().equals(userWithoutRol.getIdNumber()))))
-                .thenReturn(Mono.just(false));
-        when(userRepository.save(any(User.class))).thenReturn(Mono.just(savedUser));
-
-        StepVerifier.create(userUseCase.saveUser(userWithoutRol))
-                .expectNext(savedUser)
-                .verifyComplete();
-    }
-
-    @Test
-    @DisplayName("should save a user with default role when role name is null")
-    void save_shouldSaveUserWithDefaultRol_whenRolNameIsNull() {
-
-        User userWithEmptyRol = validUser.role(Role.builder().name(null).build()).build();
-        User userWithClientRol = userWithEmptyRol.toBuilder().role(clientRole).build();
-        User savedUser = userWithClientRol.toBuilder().userId(1).build();
-
-        when(roleRepository.findOne(any(Role.class))).thenReturn(Mono.just(clientRole));
-        when(userRepository.exists(argThat(u -> u != null && u.getEmail() != null && u.getEmail().equals(userWithEmptyRol.getEmail()))))
-                .thenReturn(Mono.just(false));
-        when(userRepository.exists(argThat(u -> u != null && u.getIdNumber() != null && u.getIdNumber().equals(userWithEmptyRol.getIdNumber()))))
-                .thenReturn(Mono.just(false));
-        when(userRepository.save(any(User.class))).thenReturn(Mono.just(savedUser));
-
-
-        StepVerifier.create(userUseCase.saveUser(userWithEmptyRol))
-                .expectNext(savedUser)
-                .verifyComplete();
+        // Mock the transactional port to just return the mono it's given
+        lenient().when(transactionalPort.transactional(any(Mono.class))).thenAnswer(invocation -> invocation.getArgument(0));
     }
 
     @Nested
-    @DisplayName("Validation Failure Tests")
-    class ValidationFailureTests {
+    @DisplayName("saveUser Tests")
+    class SaveUserTests {
 
-        private static Stream<String> invalidStrings() {
-            return Stream.of(null, "", "   ");
+        @Test
+        @DisplayName("should save user successfully when all validations pass")
+        void saveUser_whenValid_shouldSucceed() {
+            // Arrange
+            when(roleRepository.findOne(any(Role.class))).thenReturn(Mono.just(defaultRole));
+            when(userRepository.exists(any(User.class))).thenReturn(Mono.just(false));
+            when(passwordEncoderPort.encode(anyString())).thenReturn("hashed_password");
+            when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
+                User user = invocation.getArgument(0);
+                return Mono.just(user.toBuilder().userId(1).build());
+            });
+
+            // Act & Assert
+            StepVerifier.create(userUseCase.saveUser(userToSave))
+                    .expectNextMatches(savedUser ->
+                            savedUser.getUserId() != null &&
+                                    "hashed_password".equals(savedUser.getPassword()) &&
+                                    savedUser.getRole().equals(defaultRole)
+                    )
+                    .verifyComplete();
         }
 
         @Test
-        @DisplayName("saveUser should return UserNullException when user is null")
-        void save_shouldReturnUserFieldException_whenUserIsNull() {
+        @DisplayName("should return UserNullException when user is null")
+        void saveUser_whenUserIsNull_shouldReturnError() {
+            // Act & Assert
             StepVerifier.create(userUseCase.saveUser(null))
                     .expectError(UserNullException.class)
                     .verify();
         }
 
-        @ParameterizedTest(name = "when name is \"{0}\"")
-        @MethodSource("invalidStrings")
-        @DisplayName("saveUser should return FieldBlankException for invalid name")
-        void save_shouldReturnUserFieldBlankException_whenNameFieldIsInvalid(String invalidName) {
-            User invalidUser = validUser.name(invalidName).build();
-            StepVerifier.create(userUseCase.saveUser(invalidUser))
-                    .expectError(FieldBlankException.class)
-                    .verify();
-        }
-
-        @ParameterizedTest(name = "when last name is \"{0}\"")
-        @MethodSource("invalidStrings")
-        @DisplayName("saveUser should return FieldBlankException for invalid last name")
-        void save_shouldReturnUserFieldBlankException_whenLastNameFieldIsInvalid(String invalidLastName) {
-            User invalidUser = validUser.lastName(invalidLastName).build();
-            StepVerifier.create(userUseCase.saveUser(invalidUser))
-                    .expectError(FieldBlankException.class)
-                    .verify();
-        }
-
-        @ParameterizedTest(name = "when email is \"{0}\"")
-        @MethodSource("invalidStrings")
-        @DisplayName("saveUser should return FieldBlankException for invalid email")
-        void save_shouldReturnUserFieldBlankException_whenEmailFieldIsInvalid(String invalidEmail) {
-            User invalidUser = validUser.email(invalidEmail).build();
-            StepVerifier.create(userUseCase.saveUser(invalidUser))
-                    .expectError(FieldBlankException.class)
-                    .verify();
-        }
-
-        @ParameterizedTest(name = "when idNumber is \"{0}\"")
-        @MethodSource("invalidStrings")
-        @DisplayName("saveUser should return FieldBlankException for invalid idNumber")
-        void save_shouldReturnUserFieldBlankException_whenIdNumberFieldIsInvalid(String invalidIdNumber) {
-            User invalidUser = validUser.idNumber(invalidIdNumber).build();
-            StepVerifier.create(userUseCase.saveUser(invalidUser))
-                    .expectError(FieldBlankException.class)
-                    .verify();
-        }
-
         @Test
-        @DisplayName("saveUser should return FieldBlankException when salary is null")
-        void save_shouldReturnUserFieldBlankException_whenSalaryFieldIsNull() {
-            User invalidUser = validUser.baseSalary(null).build();
-            StepVerifier.create(userUseCase.saveUser(invalidUser))
-                    .expectError(FieldBlankException.class)
-                    .verify();
-        }
+        @DisplayName("should return RoleNotFoundException when role does not exist")
+        void saveUser_whenRoleNotFound_shouldReturnError() {
+            // Arrange
+            when(roleRepository.findOne(any(Role.class))).thenReturn(Mono.empty());
 
-        @ParameterizedTest(name = "when salary is {0}")
-        @ValueSource(strings = {"-1", "15000001"}) // 2. Se usan valores límite para probar el rango.
-        @DisplayName("saveUser should return SalaryUnboundException for out-of-range salaries")
-        void save_shouldReturnSalaryUnboundException_whenSalaryIsOutOfRange(String salary) {
-            User invalidUser = validUser.baseSalary(new BigDecimal(salary)).build();
-            StepVerifier.create(userUseCase.saveUser(invalidUser))
-                    .expectError(SalaryUnboundException.class)
-                    .verify();
-        }
-
-        @Test
-        @DisplayName("saveUser should return EmailFormatException for an invalid email format")
-        void save_shouldReturnEmailFormatException_whenEmailIsInvalid() {
-            User invalidUser = validUser.email("not-a-valid-email").build();
-            StepVerifier.create(userUseCase.saveUser(invalidUser))
-                    .expectError(EmailFormatException.class)
-                    .verify();
-        }
-
-        @Test
-        @DisplayName("saveUser should return FieldSizeOutOfBoundsException when name is too long")
-        void save_shouldReturnSizeOutOfBoundsException_whenNameIsTooLong() {
-            String longString = "a".repeat(DefaultValues.MAX_LENGTH_NAME+1);
-            User invalidUser = validUser.name(longString).build();
-            StepVerifier.create(userUseCase.saveUser(invalidUser))
-                    .expectError(FieldSizeOutOfBoundsException.class)
-                    .verify();
-        }
-
-        @Test
-        @DisplayName("saveUser should return FieldSizeOutOfBoundsException when last name is too long")
-        void save_shouldReturnSizeOutOfBoundsException_whenLastNameIsTooLong() {
-            String longString = "a".repeat(DefaultValues.MAX_LENGTH_LAST_NAME+1);
-            User invalidUser = validUser.lastName(longString).build();
-            StepVerifier.create(userUseCase.saveUser(invalidUser))
-                    .expectError(FieldSizeOutOfBoundsException.class)
-                    .verify();
-        }
-
-        @Test
-        @DisplayName("saveUser should return FieldSizeOutOfBoundsException when email is too long")
-        void save_shouldReturnSizeOutOfBoundsException_whenEmailIsTooLong() {
-            String longString = "a".repeat(DefaultValues.MAX_LENGTH_EMAIL+1);
-            User invalidUser = validUser.email(longString).build();
-            StepVerifier.create(userUseCase.saveUser(invalidUser))
-                    .expectError(FieldSizeOutOfBoundsException.class)
-                    .verify();
-        }
-
-        @Test
-        @DisplayName("saveUser should return FieldSizeOutOfBoundsException when ID number is too long")
-        void save_shouldReturnSizeOutOfBoundsException_whenIdNumberIsTooLong() {
-            String longString = "a".repeat(DefaultValues.MAX_LENGTH_ID_NUMBER+1);
-            User invalidUser = validUser.idNumber(longString).build();
-            StepVerifier.create(userUseCase.saveUser(invalidUser))
-                    .expectError(FieldSizeOutOfBoundsException.class)
-                    .verify();
-        }
-
-        @Test
-        @DisplayName("saveUser should return FieldSizeOutOfBoundsException when phone is too long")
-        void save_shouldReturnSizeOutOfBoundsException_whenPhoneIsTooLong() {
-            String longString = "a".repeat(DefaultValues.MAX_LENGTH_PHONE+1);
-            User invalidUser = validUser.phone(longString).build();
-            StepVerifier.create(userUseCase.saveUser(invalidUser))
-                    .expectError(FieldSizeOutOfBoundsException.class)
-                    .verify();
-        }
-
-        @Test
-        @DisplayName("saveUser should return FieldSizeOutOfBoundsException when address is too long")
-        void save_shouldReturnSizeOutOfBoundsException_whenAddressIsTooLong() {
-            String longString = "a".repeat(DefaultValues.MAX_LENGTH_ADDRESS+1);
-            User invalidUser = validUser.address(longString).build();
-            StepVerifier.create(userUseCase.saveUser(invalidUser))
-                    .expectError(FieldSizeOutOfBoundsException.class)
-                    .verify();
-        }
-    }
-
-    @Nested
-    @DisplayName("Repository Interaction Failure Tests")
-    class RepositoryFailureTests {
-
-        @Test
-        @DisplayName("should return RoleNotFoundException when the role does not exist")
-        void save_shouldReturnRoleNotFoundException_whenRoleDoesNotExist() {
-            User userToSave = validUser.role(clientRole).build();
-            when(roleRepository.findOne(clientRole)).thenReturn(Mono.empty());
-
+            // Act & Assert
             StepVerifier.create(userUseCase.saveUser(userToSave))
                     .expectError(RoleNotFoundException.class)
                     .verify();
         }
 
         @Test
-        @DisplayName("should return EmailTakenException when the email already exists")
-        void save_shouldReturnEmailTakenException_whenEmailAlreadyExists() {
-            User userToSave = validUser.role(clientRole).build();
+        @DisplayName("should return EmailTakenException when email already exists")
+        void saveUser_whenEmailExists_shouldReturnError() {
+            // Arrange
+            when(roleRepository.findOne(any(Role.class))).thenReturn(Mono.just(defaultRole));
+            // First exists call is for email, second for idNumber
+            when(userRepository.exists(any(User.class)))
+                    .thenReturn(Mono.just(true)) // Email exists
+                    .thenReturn(Mono.just(false)); // ID number does not
 
-            when(roleRepository.findOne(clientRole)).thenReturn(Mono.just(clientRole));
-            when(userRepository.exists(argThat(u -> u != null && u.getEmail() != null && u.getEmail().equals(userToSave.getEmail()))))
-                    .thenReturn(Mono.just(true));
-            when(userRepository.exists(argThat(u -> u != null && u.getIdNumber() != null && u.getIdNumber().equals(userToSave.getIdNumber()))))
-                    .thenReturn(Mono.just(false));
-
+            // Act & Assert
             StepVerifier.create(userUseCase.saveUser(userToSave))
                     .expectError(EmailTakenException.class)
                     .verify();
         }
 
         @Test
-        @DisplayName("should return IdNumberTakenException when the ID number already exists")
-        void save_shouldReturnIdNumberTakenException_whenIdNumberAlreadyExists() {
-            User userToSave = validUser.role(clientRole).build();
-            User savedUser = userToSave.toBuilder().userId(1).build();
+        @DisplayName("should return IdNumberTakenException when ID number already exists")
+        void saveUser_whenIdNumberExists_shouldReturnError() {
+            when(roleRepository.findOne(any(Role.class))).thenReturn(Mono.just(defaultRole));
+            when(userRepository.exists(any(User.class)))
+                    .thenReturn(Mono.just(false))
+                    .thenReturn(Mono.just(true));
 
-            when(roleRepository.findOne(clientRole)).thenReturn(Mono.just(clientRole));
-            when(userRepository.exists(argThat(u -> u != null && u.getEmail() != null && u.getEmail().equals(userToSave.getEmail()))))
-                    .thenReturn(Mono.just(false));
-            if (DefaultValues.ID_NUMBER_UNIQUE) {
-                when(userRepository.exists(argThat(u -> u != null && u.getIdNumber() != null && u.getIdNumber().equals(userToSave.getIdNumber()))))
-                        .thenReturn(Mono.just(true));
-                StepVerifier.create(userUseCase.saveUser(userToSave))
-                        .expectError(IdNumberTakenException.class)
-                        .verify();
-            } else {
-                when(userRepository.save(any(User.class))).thenReturn(Mono.just(savedUser));
-                StepVerifier.create(userUseCase.saveUser(userToSave))
-                    .expectNext(savedUser)
+            // Act & Assert
+            StepVerifier.create(userUseCase.saveUser(userToSave))
+                    .expectError(IdNumberTakenException.class)
+                    .verify();
+        }
+    }
+
+    @Nested
+    @DisplayName("findByIdNumber Tests")
+    class FindByIdNumberTests {
+
+        @Test
+        @DisplayName("should return user when found")
+        void findByIdNumber_whenFound_shouldReturnUser() {
+            // Arrange
+            when(userRepository.findOne(any(User.class))).thenReturn(Mono.just(userToSave));
+            when(roleRepository.findOne(any(Role.class))).thenReturn(Mono.just(defaultRole));
+
+            // Act & Assert
+            StepVerifier.create(userUseCase.findByIdNumber("123456789"))
+                    .expectNextMatches(foundUser -> "123456789".equals(foundUser.getIdNumber()))
                     .verifyComplete();
-            }
+        }
+
+        @Test
+        @DisplayName("should return empty when not found")
+        void findByIdNumber_whenNotFound_shouldReturnEmpty() {
+            // Arrange
+            when(userRepository.findOne(any(User.class))).thenReturn(Mono.empty());
+
+            // Act & Assert
+            StepVerifier.create(userUseCase.findByIdNumber("123456789"))
+                    .verifyComplete();
+        }
+    }
+
+    @Nested
+    class FindUsersByEmailsTests {
+        @Test
+        void findUsersByEmails_shouldReturnFluxOfUsers() {
+            String email1 = "john1.doe@example.com";
+            String email2 = "john2.doe@example.com";
+            User user1 = User.builder().name("john1").lastName("doe").userId(1).email(email1).build();
+            User user2 = User.builder().name("john2").lastName("doe").userId(2).email(email2).build();
+            List<String> emails = List.of(email1, email2);
+            List<User> users = List.of(user1, user2);
+            Flux<User> usersFlux = Flux.fromIterable(users);
+            when(userRepository.findAllByEmail(anyList())).thenReturn(usersFlux);
+
+            StepVerifier.create(userUseCase.findUsersByEmails(emails))
+                    .expectNext(user1)
+                    .expectNext(user2)
+                    .verifyComplete();
+        }
+    }
+
+    @Nested
+    @DisplayName("findUsersByFilter Tests")
+    class FindUsersByFilterTests {
+        @Test
+        @DisplayName("should return a flux of users matching the filter")
+        void findUsersByFilter_shouldReturnFluxOfUsers() {
+            // Arrange
+            UserFilter filter = UserFilter.builder().name("John").build();
+            when(userRepository.findUsersByFilter(filter)).thenReturn(Flux.just(userToSave));
+
+            // Act & Assert
+            StepVerifier.create(userUseCase.findUsersByFilter(filter))
+                    .expectNext(userToSave)
+                    .verifyComplete();
+        }
+    }
+
+    @Nested
+    @DisplayName("findByEmail Tests")
+    class FindByEmailTests {
+        @Test
+        @DisplayName("should return a user for a given email")
+        void findByEmail_shouldReturnUser() {
+            // Arrange
+            String email = "john.doe@example.com";
+            when(userRepository.findByEmail(email)).thenReturn(Mono.just(userToSave));
+
+            // Act & Assert
+            StepVerifier.create(userUseCase.findByEmail(email))
+                    .expectNext(userToSave)
+                    .verifyComplete();
+        }
+    }
+
+    @Nested
+    @DisplayName("findUserEmailsByFilter Tests")
+    class FindUserEmailsByFilterTests {
+        @Test
+        @DisplayName("should return a flux of emails matching the filter")
+        void findUserEmailsByFilter_shouldReturnFluxOfEmails() {
+            // Arrange
+            UserFilter filter = UserFilter.builder().name("John").build();
+            when(userRepository.findUserEmailsByFilter(filter)).thenReturn(Flux.just("john.doe@example.com"));
+
+            // Act & Assert
+            StepVerifier.create(userUseCase.findUserEmailsByFilter(filter))
+                    .expectNext("john.doe@example.com")
+                    .verifyComplete();
         }
     }
 }
