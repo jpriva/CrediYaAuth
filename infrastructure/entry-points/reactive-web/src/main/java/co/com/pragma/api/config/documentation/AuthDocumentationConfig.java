@@ -61,6 +61,6 @@ public class AuthDocumentationConfig {
             )
     })
     public RouterFunction<ServerResponse> authDocumentationRoutes() {
-        return RouterFunctions.route(GET("/dummy-auth-doc-route"), req -> ServerResponse.ok().build());
+        return RouterFunctions.route(GET(ApiConstants.ApiPathMatchers.DUMMY_AUTH_DOC_ROUTE), req -> ServerResponse.ok().build());
     }
 }

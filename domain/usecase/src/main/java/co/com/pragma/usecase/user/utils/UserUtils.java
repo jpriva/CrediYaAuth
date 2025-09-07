@@ -4,14 +4,17 @@ import co.com.pragma.model.exceptions.*;
 import co.com.pragma.model.role.Role;
 import co.com.pragma.model.user.User;
 import co.com.pragma.model.constants.DefaultValues;
+import co.com.pragma.model.user.filters.UserFilter;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import co.com.pragma.usecase.utils.ValidationUtils;
 import reactor.core.publisher.Mono;
 
+import java.math.BigDecimal;
 import java.math.RoundingMode;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class UserUtils {
-
-    private UserUtils(){}
 
     /**
      * Trims string fields and scales the salary of a User object, returning a new, immutable instance.
@@ -21,16 +24,25 @@ public class UserUtils {
      * @return A {@link Mono} emitting a new {@link User} instance with trimmed and scaled fields.
      */
     public static Mono<User> trim(User user) {
-        return Mono.fromCallable(() -> user.toBuilder()
-                .name(user.getName() != null ? user.getName().trim() : null)
-                .lastName(user.getLastName() != null ? user.getLastName().trim() : null)
-                .email(user.getEmail() != null ? user.getEmail().trim() : null)
-                .idNumber(user.getIdNumber() != null ? user.getIdNumber().trim() : null)
-                .phone(user.getPhone() != null ? user.getPhone().trim() : null)
-                .address(user.getAddress() != null ? user.getAddress().trim() : null)
-                .baseSalary(user.getBaseSalary() != null ? user.getBaseSalary().setScale(2, RoundingMode.HALF_UP) : null)
-                .password(user.getPassword() != null ? user.getPassword().trim() : null)
-                .build());
+        return Mono.justOrEmpty(user)
+                .map(u -> u.toBuilder()
+                        .name(trimString(u.getName()))
+                        .lastName(trimString(u.getLastName()))
+                        .email(trimString(u.getEmail()))
+                        .idNumber(trimString(u.getIdNumber()))
+                        .phone(trimString(u.getPhone()))
+                        .address(trimString(u.getAddress()))
+                        .baseSalary(scaleBigDecimal(u.getBaseSalary()))
+                        .password(trimString(u.getPassword()))
+                        .build());
+    }
+
+    private static String trimString(String value) {
+        return value != null ? value.trim() : null;
+    }
+
+    private static BigDecimal scaleBigDecimal(BigDecimal value) {
+        return value != null ? value.setScale(2, RoundingMode.HALF_UP) : null;
     }
 
     /**
@@ -111,6 +123,18 @@ public class UserUtils {
      */
     private static boolean isRoleReferenceMissing(Role role) {
         return role == null || (role.getRolId() == null && (role.getName() == null || role.getName().isBlank()));
+    }
+
+    public static Mono<UserFilter> validateFilter(UserFilter filter) {
+        return Mono.justOrEmpty(filter)
+                .flatMap(f -> {
+                    boolean hasAnyField = f.getSalaryGreaterThan() != null ||
+                            f.getSalaryLowerThan() != null ||
+                            f.getName() != null ||
+                            f.getEmail() != null ||
+                            f.getIdNumber() != null;
+                    return hasAnyField ? Mono.just(f) : Mono.error(new FilterEmptyException());
+                });
     }
 
 }

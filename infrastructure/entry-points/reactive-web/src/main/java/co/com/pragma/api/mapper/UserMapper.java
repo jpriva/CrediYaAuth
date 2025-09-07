@@ -1,8 +1,10 @@
 package co.com.pragma.api.mapper;
 
+import co.com.pragma.api.dto.FindUsersRequestDTO;
 import co.com.pragma.api.dto.UserRequestDTO;
 import co.com.pragma.api.dto.UserResponseDTO;
 import co.com.pragma.model.user.User;
+import co.com.pragma.model.user.filters.UserFilter;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -15,4 +17,5 @@ public interface UserMapper {
 
     UserResponseDTO toResponseDto(User user);
 
+    UserFilter toUserFilter(FindUsersRequestDTO dto);
 }

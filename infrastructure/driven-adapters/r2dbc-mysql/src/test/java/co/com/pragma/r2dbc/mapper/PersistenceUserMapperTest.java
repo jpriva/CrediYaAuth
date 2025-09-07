@@ -1,8 +1,8 @@
 package co.com.pragma.r2dbc.mapper;
 
+import co.com.pragma.model.role.Role;
 import co.com.pragma.model.user.User;
 import co.com.pragma.r2dbc.entity.UserEntity;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,11 +23,9 @@ class PersistenceUserMapperTest {
     private PersistenceUserMapper userMapper;
 
     @Nested
-    @DisplayName("toDomain mapping tests")
     class ToDomain {
 
         @Test
-        @DisplayName("should correctly map a valid UserEntity to a User domain object")
         void toDomain_whenValidEntity_shouldMapToDomain() {
             UserEntity entity = UserEntity.builder()
                     .userId(1)
@@ -61,11 +59,51 @@ class PersistenceUserMapperTest {
         }
 
         @Test
-        @DisplayName("should return null when the input UserEntity is null")
         void toDomain_whenEntityIsNull_shouldReturnNull() {
             User domain = userMapper.toDomain(null);
 
             assertThat(domain).isNull();
+        }
+    }
+
+    @Nested
+    class ToEntity {
+
+        @Test
+        void ToEntity_whenValidDomain_shouldMapToEntity() {
+            User domain = User.builder()
+                    .userId(1)
+                    .name("John")
+                    .lastName("Doe")
+                    .email("john.doe@example.com")
+                    .idNumber("123456789")
+                    .role(Role.builder().rolId(10).build())
+                    .baseSalary(new BigDecimal("50000.00"))
+                    .phone("1234567890")
+                    .address("123 Main St")
+                    .birthDate(LocalDate.of(1990, 1, 1))
+                    .build();
+
+            UserEntity entity = userMapper.toEntity(domain);
+
+            assertThat(entity).isNotNull();
+            assertThat(entity.getUserId()).isEqualTo(domain.getUserId());
+            assertThat(entity.getName()).isEqualTo(domain.getName());
+            assertThat(entity.getLastName()).isEqualTo(domain.getLastName());
+            assertThat(entity.getEmail()).isEqualTo(domain.getEmail());
+            assertThat(entity.getIdNumber()).isEqualTo(domain.getIdNumber());
+            assertThat(entity.getBaseSalary()).isEqualByComparingTo(domain.getBaseSalary());
+            assertThat(entity.getPhone()).isEqualTo(domain.getPhone());
+            assertThat(entity.getAddress()).isEqualTo(domain.getAddress());
+            assertThat(entity.getBirthDate()).isEqualTo(domain.getBirthDate());
+            assertThat(entity.getRolId()).isEqualTo(domain.getRole().getRolId());
+        }
+
+        @Test
+        void ToEntity_whenDomainIsNull_shouldReturnNull() {
+            UserEntity entity = userMapper.toEntity(null);
+
+            assertThat(entity).isNull();
         }
     }
 }

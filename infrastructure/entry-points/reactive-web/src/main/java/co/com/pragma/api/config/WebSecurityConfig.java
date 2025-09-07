@@ -44,9 +44,13 @@ public class WebSecurityConfig {
                                 ApiPathMatchers.LOGIN_MATCHER,
                                 ApiPathMatchers.API_DOCS_MATCHER,
                                 ApiPathMatchers.SWAGGER_UI_MATCHER,
-                                ApiConstants.ApiPaths.SWAGGER_PATH,
-                                ApiPathMatchers.TEST_MATCHER
+                                ApiConstants.ApiPaths.SWAGGER_PATH
                         ).permitAll()
+                        .pathMatchers(
+                                ApiPathMatchers.SEARCHES_MATCHER
+                        ).hasAnyAuthority(
+                                ApiConstants.Role.ADVISOR_ROLE_NAME
+                        )
                         .pathMatchers(
                                 ApiPathMatchers.USER_MATCHER
                         ).hasAnyAuthority(
@@ -76,7 +80,7 @@ public class WebSecurityConfig {
                     JwtData jwtData = jwtProvider.getClaims(authToken);
                     String email = jwtData.subject();
                     List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(jwtData.role()));
-                    Authentication auth = new UsernamePasswordAuthenticationToken(email, null, authorities);
+                    Authentication auth = new UsernamePasswordAuthenticationToken(email, authToken, authorities);
                     return Mono.just(new SecurityContextImpl(auth));
                 } catch (Exception e) {
                     return Mono.empty();

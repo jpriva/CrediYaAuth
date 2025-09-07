@@ -27,6 +27,10 @@ public class AdminUserInitializer implements ApplicationListener<ApplicationRead
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
+        createAdminUser();
+    }
+
+    private void createAdminUser() {
         if (adminProps == null || !StringUtils.hasText(adminProps.getEmail()) || !StringUtils.hasText(adminProps.getPassword())) {
             logger.warn("Default admin user properties (app.default-admin.email, app.default-admin.password) are not configured. Skipping admin user creation.");
             return;

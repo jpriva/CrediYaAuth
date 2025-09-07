@@ -12,10 +12,16 @@ import co.com.pragma.model.password.gateways.PasswordEncoderPort;
 import co.com.pragma.model.role.gateways.RoleRepository;
 import co.com.pragma.model.transaction.gateways.TransactionalPort;
 import co.com.pragma.model.user.User;
+import co.com.pragma.model.user.filters.UserFilter;
 import co.com.pragma.model.user.gateways.UserRepository;
 import co.com.pragma.usecase.user.utils.UserUtils;
 import lombok.RequiredArgsConstructor;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.List;
+
+import static co.com.pragma.usecase.user.utils.UserUtils.validateFilter;
 
 @RequiredArgsConstructor
 public class UserUseCase {
@@ -46,6 +52,31 @@ public class UserUseCase {
                 .doFirst(() -> logger.info(LogMessages.FINDING_USER_BY_ID_NUMBER, idNumber))
                 .doOnError(ex -> logger.error(LogMessages.ERROR_FINDING_USER_BY_ID_NUMBER, idNumber, ex))
                 .doOnNext(user -> logger.info(LogMessages.USER_WITH_ID_NUMBER_FOUND, user.getUserId()));
+    }
+
+    public Flux<User> findUsersByEmails(List<String> emails) {
+        return userRepository.findAllByEmail(emails)
+                .doFirst(() -> logger.info(LogMessages.FINDING_USERS_BY_EMAILS, emails))
+                .doOnError(ex -> logger.error(LogMessages.ERROR_FINDING_USERS_BY_EMAILS, emails, ex))
+                .doOnNext(user -> logger.info(LogMessages.USER_WITH_EMAIL_FOUND, user.getEmail()));
+    }
+
+    public Flux<User> findUsersByFilter(UserFilter filter) {
+        return validateFilter(filter)
+                .flatMapMany(userRepository::findUsersByFilter)
+                .doFirst(() -> logger.info(LogMessages.FINDING_USERS))
+                .doOnError(ex -> logger.error(LogMessages.ERROR_FINDING_USERS, ex));
+    }
+
+    public Mono<User> findByEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
+
+    public Flux<String> findUserEmailsByFilter(UserFilter filter) {
+        return validateFilter(filter)
+                .flatMapMany(userRepository::findUserEmailsByFilter)
+                .doFirst(() -> logger.info(LogMessages.FINDING_USER_EMAILS))
+                .doOnError(ex -> logger.error(LogMessages.ERROR_FINDING_USER_EMAILS, ex));
     }
 
     // START Private methods ***********************************************************
