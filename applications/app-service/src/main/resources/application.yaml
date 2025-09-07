@@ -9,9 +9,9 @@ spring:
   profiles:
     include: null
   flyway:
-    url: "jdbc:mysql://localhost:3306/auth_db"
-    user: "jpriva"
-    password: "pass12345"
+    url: ${SPRING_JDBC_URL:jdbc:mysql://localhost:3306/auth_db}
+    user: ${SPRING_DB_USERNAME:jpriva}
+    password: ${SPRING_DB_PASSWORD:pass12345}
     locations: "classpath:db/migration"
     enabled: true
   output:
@@ -20,11 +20,11 @@ spring:
 
 adapters:
   r2dbc:
-    host: "localhost"
-    port: 3306
-    database: "auth_db"
-    username: "jpriva"
-    password: "pass12345"
+    host: ${SPRING_R2DBC_HOST:localhost}
+    port: ${SPRING_R2DBC_PORT:3306}
+    database: ${SPRING_R2DBC_DB:auth_db}
+    username: ${SPRING_DB_USERNAME:jpriva}
+    password: ${SPRING_DB_PASSWORD:pass12345}
 
 management:
   endpoints:
@@ -57,10 +57,10 @@ logging:
 
 security:
   jwt:
-    secret: 6wmLjTUj5h4CXtp23BPjlr2IouInKGEBhqVi+LkR1KlIisuE4dKm4vbwWhUKwPsg53CjqX5Uu2L8TshpLXPdWA==
+    secret: ${JWT_SECRET:6wmLjTUj5h4CXtp23BPjlr2IouInKGEBhqVi+LkR1KlIisuE4dKm4vbwWhUKwPsg53CjqX5Uu2L8TshpLXPdWA==}
     expiration: 3600
 
 app:
   default-admin:
-    email: "admin@crediya.com"
-    password: "admin1234"
+    email: ${APP_DEFAULT-ADMIN_EMAIL:admin@crediya.com}
+    password: ${APP_DEFAULT-ADMIN_PASSWORD:admin1234}
