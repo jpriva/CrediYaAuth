@@ -50,8 +50,10 @@ public class ApiConstants {
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
     public static final class Operations {
         public static final String SAVE_USER_OPERATION_ID = "saveUser";
-        public static final String SAVE_USER_SUMMARY = "Save a new user";
-        public static final String SAVE_USER_DESCRIPTION = "Creates a new user. Requires ADMIN or ADVISOR role.";
+        public static final String SAVE_USER_SUMMARY = "Save a new user into the system, for admin and advisor's role only";
+        public static final String SAVE_USER_DESCRIPTION = "Creates a new user. Requires admin or advisor role.";
+        public static final String LOGIN_SUMMARY = "Login into the system.";
+        public static final String LOGIN_DESCRIPTION = "Endpoint designated for user authentication.";
         public static final String LOGIN_OPERATION_ID = "login";
         public static final String LOGIN_REQUEST_BODY_DESC = "User credentials for authentication";
         public static final String SAVE_USER_REQUEST_BODY_DESC = "User Requested Data";
