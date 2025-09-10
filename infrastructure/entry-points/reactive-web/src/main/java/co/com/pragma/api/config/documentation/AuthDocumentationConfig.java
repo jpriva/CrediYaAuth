@@ -34,6 +34,8 @@ public class AuthDocumentationConfig {
                     beanClass = Handler.class,
                     beanMethod = "listenPOSTLoginUseCase",
                     operation = @Operation(
+                            summary = ApiConstants.Operations.LOGIN_SUMMARY,
+                            description = ApiConstants.Operations.LOGIN_DESCRIPTION,
                             operationId = ApiConstants.Operations.LOGIN_OPERATION_ID,
                             requestBody = @RequestBody(
                                     content = @Content(schema = @Schema(implementation = LoginRequestDTO.class)),
