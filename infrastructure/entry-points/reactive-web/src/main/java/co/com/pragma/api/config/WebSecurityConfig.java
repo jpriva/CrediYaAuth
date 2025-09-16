@@ -5,6 +5,7 @@ import co.com.pragma.api.constants.ApiConstants.ApiPathMatchers;
 import co.com.pragma.api.exception.handler.CustomAccessDeniedHandler;
 import co.com.pragma.model.jwt.JwtData;
 import co.com.pragma.model.jwt.gateways.JwtProviderPort;
+import co.com.pragma.model.logs.gateways.LoggerPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,6 +31,7 @@ public class WebSecurityConfig {
 
     private final JwtProviderPort jwtProvider;
     private final CustomAccessDeniedHandler accessDeniedHandler;
+    private final LoggerPort logger;
 
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
@@ -46,6 +48,11 @@ public class WebSecurityConfig {
                                 ApiPathMatchers.SWAGGER_UI_MATCHER,
                                 ApiConstants.ApiPaths.SWAGGER_PATH
                         ).permitAll()
+                        .pathMatchers(
+                                ApiPathMatchers.USER_BY_EMAIL_MATCHER
+                        ).hasAnyAuthority(
+                                ApiConstants.Role.CLIENT_ROLE_NAME
+                        )
                         .pathMatchers(
                                 ApiPathMatchers.SEARCHES_MATCHER
                         ).hasAnyAuthority(
@@ -81,6 +88,7 @@ public class WebSecurityConfig {
                     String email = jwtData.subject();
                     List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(jwtData.role()));
                     Authentication auth = new UsernamePasswordAuthenticationToken(email, authToken, authorities);
+                    logger.info("User {} logged in, with role {}", email, jwtData.role());
                     return Mono.just(new SecurityContextImpl(auth));
                 } catch (Exception e) {
                     return Mono.empty();

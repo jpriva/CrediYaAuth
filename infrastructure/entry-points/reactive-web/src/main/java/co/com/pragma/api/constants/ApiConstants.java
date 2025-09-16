@@ -40,6 +40,8 @@ public class ApiConstants {
         public static final String USER_MATCHER = ApiPaths.USERS_PATH + "/**";
         //ASESOR
         public static final String SEARCHES_MATCHER = ApiPaths.SEARCHES_PATH + "/**";
+        //CLIENTE
+        public static final String USER_BY_EMAIL_MATCHER = ApiPaths.SEARCHES_PATH + "/email/**";
         //TEST ENDPOINT
         public static final String TEST_MATCHER = "/test-endpoint";
         public static final String DUMMY_USER_DOC_ROUTE = "/dummy-user-doc-route";

@@ -301,7 +301,7 @@ class RouterRestTest {
     }
 
     @Test
-    @WithMockUser(authorities = "ASESOR")
+    @WithMockUser(authorities = "CLIENTE")
     void findUserByEmail_shouldReturnOk_whenUserIsFound() {
         String email = "john.doe@example.com";
         when(userUseCase.findByEmail(email)).thenReturn(Mono.just(User.builder().email(email).build()));
