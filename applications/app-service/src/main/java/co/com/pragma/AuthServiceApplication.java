@@ -9,8 +9,8 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 @SpringBootApplication
 @ConfigurationPropertiesScan
 @EnableConfigurationProperties(AdminUserProperties.class)
-public class MainApplication {
+public class AuthServiceApplication {
     public static void main(String[] args) {
-        SpringApplication.run(MainApplication.class, args);
+        SpringApplication.run(AuthServiceApplication.class, args);
     }
 }
