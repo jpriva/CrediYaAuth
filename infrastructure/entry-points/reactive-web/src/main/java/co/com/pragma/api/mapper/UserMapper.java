@@ -5,10 +5,14 @@ import co.com.pragma.api.dto.UserRequestDTO;
 import co.com.pragma.api.dto.UserResponseDTO;
 import co.com.pragma.model.user.User;
 import co.com.pragma.model.user.filters.UserFilter;
+import org.mapstruct.InjectionStrategy;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-@Mapper(componentModel = "spring", uses = RoleMapper.class)
+@Mapper(componentModel = "spring",
+        uses = {RoleMapper.class},
+        injectionStrategy = InjectionStrategy.CONSTRUCTOR
+)
 public interface UserMapper {
 
     @Mapping(target = "userId", ignore = true)

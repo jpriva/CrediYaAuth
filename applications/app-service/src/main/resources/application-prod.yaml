@@ -1,0 +1,28 @@
+spring:
+  flyway:
+    url: jdbc:mysql://${SPRING_R2DBC_HOST}:${SPRING_R2DBC_PORT}/${SPRING_R2DBC_DB}
+    user: ${SPRING_DB_USERNAME}
+    password: ${SPRING_DB_PASSWORD}
+
+adapters:
+  r2dbc:
+    host: ${SPRING_R2DBC_HOST}
+    port: ${SPRING_R2DBC_PORT}
+    database: ${SPRING_R2DBC_DB}
+    username: ${SPRING_DB_USERNAME}
+    password: ${SPRING_DB_PASSWORD}
+
+security:
+  jwt:
+    secret: ${JWT_SECRET}
+
+app:
+  default-admin:
+    email: ${APP_DEFAULT-ADMIN_EMAIL}
+    password: ${APP_DEFAULT-ADMIN_PASSWORD}
+  default-super-user:
+    email: ${APP_DEFAULT-SUPER_EMAIL}
+    password: ${APP_DEFAULT-SUPER_PASSWORD}
+
+cors:
+  allowed-origins: "${CORS_ALLOWED_ORIGINS}"

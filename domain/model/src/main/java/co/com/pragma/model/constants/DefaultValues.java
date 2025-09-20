@@ -8,6 +8,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class DefaultValues {
 
+    public static final String SUPER_USER_ROLE_NAME = "SUPER_USER";
     public static final String ADMIN_ROLE_NAME = "ADMIN";
 
     public static final boolean ID_NUMBER_UNIQUE = true;

@@ -25,6 +25,7 @@ CREATE TABLE Usuario (
 );
 
 INSERT INTO Rol (nombre, descripcion) VALUES
+('SUPER_USER', 'Super Usuario'),
 ('ADMIN', 'Administrador del sistema'),
 ('ASESOR', 'Asesor'),
 ('CLIENTE', 'Cliente Solicitante');

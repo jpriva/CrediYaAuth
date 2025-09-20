@@ -42,6 +42,9 @@ public class ApiConstants {
         public static final String SEARCHES_MATCHER = ApiPaths.SEARCHES_PATH + "/**";
         //CLIENTE
         public static final String USER_BY_EMAIL_MATCHER = ApiPaths.SEARCHES_PATH + "/email/**";
+        //SUPER_USER
+        public static final String ACTUATOR_MATCHER = "/actuator/**";
+        public static final String HEALTH_CHECK_MATCHER = "/actuator/health/**";
         //TEST ENDPOINT
         public static final String TEST_MATCHER = "/test-endpoint";
         public static final String DUMMY_USER_DOC_ROUTE = "/dummy-user-doc-route";
@@ -143,6 +146,7 @@ public class ApiConstants {
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
     public static final class Role {
+        public static final String SUPER_USER_ROLE_NAME = "SUPER_USER";
         public static final String CLIENT_ROLE_NAME = "CLIENTE";
         public static final String ADMIN_ROLE_NAME = "ADMIN";
         public static final String ADVISOR_ROLE_NAME = "ASESOR";

@@ -2,10 +2,14 @@ package co.com.pragma.r2dbc.mapper;
 
 import co.com.pragma.model.user.User;
 import co.com.pragma.r2dbc.entity.UserEntity;
+import org.mapstruct.InjectionStrategy;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-@Mapper(componentModel = "spring", uses = PersistenceRoleMapper.class)
+@Mapper(componentModel = "spring",
+        uses = { PersistenceRoleMapper.class },
+        injectionStrategy = InjectionStrategy.CONSTRUCTOR
+)
 public interface PersistenceUserMapper {
     @Mapping(source = "rolId", target = "role.rolId")
     @Mapping(target = "role.name", ignore = true)
