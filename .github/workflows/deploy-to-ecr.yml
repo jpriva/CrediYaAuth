@@ -37,17 +37,16 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ secrets.ECR_REPOSITORY }}
-          tags: | 
+          images: ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}
+          tags: |
             type=semver,pattern={{version}}
             type=raw,value=latest
 
       - name: Build and push Docker image
-        env:
-          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY_NAME }}
         uses: docker/build-push-action@v5
         with:
           context: .
+          file: ./deployment/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
