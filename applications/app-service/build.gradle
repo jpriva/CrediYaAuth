@@ -1,0 +1,35 @@
+apply plugin: 'org.springframework.boot'
+
+dependencies {
+	implementation project(':jwt-adapter')
+	implementation project(':password')
+	implementation project(':reactive-web')
+	implementation project(':logger')
+	implementation 'org.reactivecommons.utils:object-mapper:0.1.0'
+	implementation project(':r2dbc-mysql')
+    implementation project(':model')
+    implementation project(':usecase')
+    implementation 'org.springframework.boot:spring-boot-starter'
+    runtimeOnly('org.springframework.boot:spring-boot-devtools')
+    testImplementation 'com.tngtech.archunit:archunit:1.4.1'
+    testImplementation 'com.fasterxml.jackson.core:jackson-databind'
+    implementation 'org.springdoc:springdoc-openapi-starter-webflux-ui:2.8.11'
+    implementation 'org.springframework.boot:spring-boot-starter-data-r2dbc'
+    testImplementation 'io.r2dbc:r2dbc-h2'
+    testRuntimeOnly 'com.h2database:h2'
+}
+
+tasks.register('explodedJar', Copy) {
+    with jar
+    into layout.buildDirectory.dir("exploded")
+}
+
+jar {
+    // To disable the *-plain.jar
+    enabled = false
+}
+
+bootJar {
+    // Sets output jar name
+    archiveFileName = "${project.getParent().getName()}.${archiveExtension.get()}"
+}

@@ -1,0 +1,20 @@
+dependencies {
+    implementation project(':model')
+    implementation 'org.springframework:spring-context'
+    implementation 'org.springframework.boot:spring-boot-starter-data-r2dbc'
+
+    //Flyway
+    implementation 'org.flywaydb:flyway-core:11.11.2'
+    implementation 'org.flywaydb:flyway-mysql:11.11.2'
+    //MySQL for project
+    implementation 'io.asyncer:r2dbc-mysql'
+    runtimeOnly 'com.mysql:mysql-connector-j:8.2.0'
+    //H2 for tests
+    testImplementation 'io.r2dbc:r2dbc-h2'
+    testRuntimeOnly 'com.h2database:h2'
+
+    //Mapstruct
+    implementation 'org.mapstruct:mapstruct:1.6.3'
+    annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.3'
+
+}

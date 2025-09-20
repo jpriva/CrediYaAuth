@@ -1,0 +1,15 @@
+package co.com.pragma.model.role;
+
+import lombok.*;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@EqualsAndHashCode
+@AllArgsConstructor
+@Builder(toBuilder = true)
+public class Role {
+    private Integer rolId;
+    private String name;
+    private String description;
+}
