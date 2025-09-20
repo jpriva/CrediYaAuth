@@ -26,6 +26,8 @@ jobs:
       - name: Log in to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
+        with:
+          registry-type: public
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -37,7 +39,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}
+          images: ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_PUBLIC_ALIAS }}/${{ secrets.ECR_REPOSITORY }}
           tags: |
             type=semver,pattern={{version}}
             type=raw,value=latest
