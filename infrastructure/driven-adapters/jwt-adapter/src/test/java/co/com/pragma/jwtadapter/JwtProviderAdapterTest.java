@@ -76,9 +76,7 @@ class JwtProviderAdapterTest {
         JwtProviderAdapter shortLivedAdapter = new JwtProviderAdapter(shortLivedProperties);
         String expiredToken = shortLivedAdapter.generateToken(testUser);
 
-        await().atMost(Duration.ofSeconds(1)).untilAsserted(() ->
-                assertThatThrownBy(() -> jwtProviderAdapter.getClaims(expiredToken))
-                        .isInstanceOf(ExpiredJwtException.class)
-        );
+        assertThatThrownBy(() -> jwtProviderAdapter.getClaims(expiredToken))
+                .isInstanceOf(ExpiredJwtException.class);
     }
 }

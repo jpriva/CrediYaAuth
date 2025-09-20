@@ -49,6 +49,14 @@ public class WebSecurityConfig {
                                 ApiConstants.ApiPaths.SWAGGER_PATH
                         ).permitAll()
                         .pathMatchers(
+                                ApiPathMatchers.HEALTH_CHECK_MATCHER
+                        ).permitAll()
+                        .pathMatchers(
+                                ApiPathMatchers.ACTUATOR_MATCHER
+                        ).hasAnyAuthority(
+                                ApiConstants.Role.SUPER_USER_ROLE_NAME
+                        )
+                        .pathMatchers(
                                 ApiPathMatchers.USER_BY_EMAIL_MATCHER
                         ).hasAnyAuthority(
                                 ApiConstants.Role.CLIENT_ROLE_NAME

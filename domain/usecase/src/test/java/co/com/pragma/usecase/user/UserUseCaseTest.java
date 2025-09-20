@@ -1,5 +1,6 @@
 package co.com.pragma.usecase.user;
 
+import co.com.pragma.model.constants.LogMessages;
 import co.com.pragma.model.constants.DefaultValues;
 import co.com.pragma.model.exceptions.*;
 import co.com.pragma.model.logs.gateways.LoggerPort;
@@ -11,7 +12,6 @@ import co.com.pragma.model.user.User;
 import co.com.pragma.model.user.filters.UserFilter;
 import co.com.pragma.model.user.gateways.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,8 +26,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class UserUseCaseTest {
@@ -49,6 +48,7 @@ class UserUseCaseTest {
     private User userToSave;
     private Role defaultRole;
 
+    @SuppressWarnings("unchecked")
     @BeforeEach
     void setUp() {
         defaultRole = Role.builder().rolId(3).name(DefaultValues.DEFAULT_ROLE_NAME).build();
@@ -62,18 +62,15 @@ class UserUseCaseTest {
                 .baseSalary(new BigDecimal("50000"))
                 .build();
 
-        // Mock the transactional port to just return the mono it's given
+
         lenient().when(transactionalPort.transactional(any(Mono.class))).thenAnswer(invocation -> invocation.getArgument(0));
     }
 
     @Nested
-    @DisplayName("saveUser Tests")
     class SaveUserTests {
 
         @Test
-        @DisplayName("should save user successfully when all validations pass")
         void saveUser_whenValid_shouldSucceed() {
-            // Arrange
             when(roleRepository.findOne(any(Role.class))).thenReturn(Mono.just(defaultRole));
             when(userRepository.exists(any(User.class))).thenReturn(Mono.just(false));
             when(passwordEncoderPort.encode(anyString())).thenReturn("hashed_password");
@@ -82,7 +79,6 @@ class UserUseCaseTest {
                 return Mono.just(user.toBuilder().userId(1).build());
             });
 
-            // Act & Assert
             StepVerifier.create(userUseCase.saveUser(userToSave))
                     .expectNextMatches(savedUser ->
                             savedUser.getUserId() != null &&
@@ -93,51 +89,40 @@ class UserUseCaseTest {
         }
 
         @Test
-        @DisplayName("should return UserNullException when user is null")
         void saveUser_whenUserIsNull_shouldReturnError() {
-            // Act & Assert
             StepVerifier.create(userUseCase.saveUser(null))
                     .expectError(UserNullException.class)
                     .verify();
         }
 
         @Test
-        @DisplayName("should return RoleNotFoundException when role does not exist")
         void saveUser_whenRoleNotFound_shouldReturnError() {
-            // Arrange
             when(roleRepository.findOne(any(Role.class))).thenReturn(Mono.empty());
 
-            // Act & Assert
             StepVerifier.create(userUseCase.saveUser(userToSave))
                     .expectError(RoleNotFoundException.class)
                     .verify();
         }
 
         @Test
-        @DisplayName("should return EmailTakenException when email already exists")
         void saveUser_whenEmailExists_shouldReturnError() {
-            // Arrange
             when(roleRepository.findOne(any(Role.class))).thenReturn(Mono.just(defaultRole));
-            // First exists call is for email, second for idNumber
             when(userRepository.exists(any(User.class)))
-                    .thenReturn(Mono.just(true)) // Email exists
-                    .thenReturn(Mono.just(false)); // ID number does not
+                    .thenReturn(Mono.just(true))
+                    .thenReturn(Mono.just(false));
 
-            // Act & Assert
             StepVerifier.create(userUseCase.saveUser(userToSave))
                     .expectError(EmailTakenException.class)
                     .verify();
         }
 
         @Test
-        @DisplayName("should return IdNumberTakenException when ID number already exists")
         void saveUser_whenIdNumberExists_shouldReturnError() {
             when(roleRepository.findOne(any(Role.class))).thenReturn(Mono.just(defaultRole));
             when(userRepository.exists(any(User.class)))
                     .thenReturn(Mono.just(false))
                     .thenReturn(Mono.just(true));
 
-            // Act & Assert
             StepVerifier.create(userUseCase.saveUser(userToSave))
                     .expectError(IdNumberTakenException.class)
                     .verify();
@@ -145,31 +130,37 @@ class UserUseCaseTest {
     }
 
     @Nested
-    @DisplayName("findByIdNumber Tests")
     class FindByIdNumberTests {
 
         @Test
-        @DisplayName("should return user when found")
         void findByIdNumber_whenFound_shouldReturnUser() {
-            // Arrange
             when(userRepository.findOne(any(User.class))).thenReturn(Mono.just(userToSave));
             when(roleRepository.findOne(any(Role.class))).thenReturn(Mono.just(defaultRole));
 
-            // Act & Assert
             StepVerifier.create(userUseCase.findByIdNumber("123456789"))
                     .expectNextMatches(foundUser -> "123456789".equals(foundUser.getIdNumber()))
                     .verifyComplete();
         }
 
         @Test
-        @DisplayName("should return empty when not found")
         void findByIdNumber_whenNotFound_shouldReturnEmpty() {
-            // Arrange
             when(userRepository.findOne(any(User.class))).thenReturn(Mono.empty());
 
-            // Act & Assert
             StepVerifier.create(userUseCase.findByIdNumber("123456789"))
                     .verifyComplete();
+        }
+
+        @Test
+        void findByIdNumber_whenRepositoryFails_shouldLogError() {
+            String idNumber = "123456789";
+            RuntimeException dbError = new RuntimeException("DB is down");
+            when(userRepository.findOne(any(User.class))).thenReturn(Mono.error(dbError));
+
+            StepVerifier.create(userUseCase.findByIdNumber(idNumber))
+                    .expectError(RuntimeException.class)
+                    .verify();
+
+            verify(logger).error(LogMessages.ERROR_FINDING_USER_BY_ID_NUMBER, idNumber, dbError);
         }
     }
 
@@ -191,36 +182,56 @@ class UserUseCaseTest {
                     .expectNext(user2)
                     .verifyComplete();
         }
-    }
 
-    @Nested
-    @DisplayName("findUsersByFilter Tests")
-    class FindUsersByFilterTests {
         @Test
-        @DisplayName("should return a flux of users matching the filter")
-        void findUsersByFilter_shouldReturnFluxOfUsers() {
+        void findUsersByEmails_whenRepositoryFails_shouldLogError() {
             // Arrange
-            UserFilter filter = UserFilter.builder().name("John").build();
-            when(userRepository.findUsersByFilter(filter)).thenReturn(Flux.just(userToSave));
+            List<String> emails = List.of("test@example.com");
+            RuntimeException dbError = new RuntimeException("DB is down");
+            when(userRepository.findAllByEmail(anyList())).thenReturn(Flux.error(dbError));
 
             // Act & Assert
-            StepVerifier.create(userUseCase.findUsersByFilter(filter))
-                    .expectNext(userToSave)
-                    .verifyComplete();
+            StepVerifier.create(userUseCase.findUsersByEmails(emails))
+                    .expectError(RuntimeException.class)
+                    .verify();
+
+            verify(logger).error(LogMessages.ERROR_FINDING_USERS_BY_EMAILS, emails, dbError);
         }
     }
 
     @Nested
-    @DisplayName("findByEmail Tests")
+    class FindUsersByFilterTests {
+        @Test
+        void findUsersByFilter_shouldReturnFluxOfUsers() {
+            UserFilter filter = UserFilter.builder().name("John").build();
+            when(userRepository.findUsersByFilter(filter)).thenReturn(Flux.just(userToSave));
+
+            StepVerifier.create(userUseCase.findUsersByFilter(filter))
+                    .expectNext(userToSave)
+                    .verifyComplete();
+        }
+
+        @Test
+        void findUsersByFilter_whenRepositoryFails_shouldLogError() {
+            UserFilter filter = UserFilter.builder().name("John").build();
+            RuntimeException dbError = new RuntimeException("DB is down");
+            when(userRepository.findUsersByFilter(filter)).thenReturn(Flux.error(dbError));
+
+            StepVerifier.create(userUseCase.findUsersByFilter(filter))
+                    .expectError(RuntimeException.class)
+                    .verify();
+
+            verify(logger).error(LogMessages.ERROR_FINDING_USERS, dbError);
+        }
+    }
+
+    @Nested
     class FindByEmailTests {
         @Test
-        @DisplayName("should return a user for a given email")
         void findByEmail_shouldReturnUser() {
-            // Arrange
             String email = "john.doe@example.com";
             when(userRepository.findByEmail(email)).thenReturn(Mono.just(userToSave));
 
-            // Act & Assert
             StepVerifier.create(userUseCase.findByEmail(email))
                     .expectNext(userToSave)
                     .verifyComplete();
@@ -228,19 +239,28 @@ class UserUseCaseTest {
     }
 
     @Nested
-    @DisplayName("findUserEmailsByFilter Tests")
     class FindUserEmailsByFilterTests {
         @Test
-        @DisplayName("should return a flux of emails matching the filter")
         void findUserEmailsByFilter_shouldReturnFluxOfEmails() {
-            // Arrange
             UserFilter filter = UserFilter.builder().name("John").build();
             when(userRepository.findUserEmailsByFilter(filter)).thenReturn(Flux.just("john.doe@example.com"));
 
-            // Act & Assert
             StepVerifier.create(userUseCase.findUserEmailsByFilter(filter))
                     .expectNext("john.doe@example.com")
                     .verifyComplete();
+        }
+
+        @Test
+        void findUserEmailsByFilter_whenRepositoryFails_shouldLogError() {
+            UserFilter filter = UserFilter.builder().name("John").build();
+            RuntimeException dbError = new RuntimeException("DB is down");
+            when(userRepository.findUserEmailsByFilter(filter)).thenReturn(Flux.error(dbError));
+
+            StepVerifier.create(userUseCase.findUserEmailsByFilter(filter))
+                    .expectError(RuntimeException.class)
+                    .verify();
+
+            verify(logger).error(LogMessages.ERROR_FINDING_USER_EMAILS, dbError);
         }
     }
 }

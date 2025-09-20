@@ -30,7 +30,6 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
-import org.springframework.util.MultiValueMap;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -38,7 +37,6 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ContextConfiguration(classes = {
@@ -172,11 +170,12 @@ class RouterRestTest {
     @Test
     @WithMockUser(authorities = "ADMIN")
     void saveUser_shouldReturnBadRequest_whenServerWebInputExceptionIsThrown() {
+        String failedBody = "{FailedBody}";
         webTestClient.post()
                 .uri(ApiConstants.ApiPaths.USERS_PATH)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .bodyValue("{FailedBody}")
+                .bodyValue(failedBody)
                 .exchange()
                 .expectStatus().isEqualTo(HttpStatus.BAD_REQUEST)
                 .expectBody(ErrorDTO.class)
@@ -319,10 +318,8 @@ class RouterRestTest {
     @Test
     @WithMockUser(authorities = "ASESOR")
     void findUsersByFilter_shouldReturnOkWithUserList() {
-        MultiValueMap<String, String> mockMultiValueMap = mock(MultiValueMap.class);
-        when(filterMapper.toFilter(mockMultiValueMap)).thenReturn(UserFilter.builder().build());
-        when(userUseCase.findUsersByFilter(any(UserFilter.class))).thenReturn(Flux.just(User.builder().build()));
-        when(userMapper.toResponseDto(any(User.class))).thenReturn(responseDto);
+        when(userUseCase.findUsersByFilter(any())).thenReturn(Flux.just(User.builder().build()));
+        when(userMapper.toResponseDto(any())).thenReturn(responseDto);
 
         webTestClient.get()
                 .uri(uriBuilder -> uriBuilder.path(ApiConstants.ApiPaths.USERS_BY_FILTER_PATH).queryParam("name", "John").build())

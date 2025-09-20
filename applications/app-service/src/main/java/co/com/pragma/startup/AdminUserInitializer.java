@@ -1,6 +1,7 @@
 package co.com.pragma.startup;
 
 import co.com.pragma.config.AdminUserProperties;
+import co.com.pragma.config.SuperUserProperties;
 import co.com.pragma.model.constants.DefaultValues;
 import co.com.pragma.model.logs.gateways.LoggerPort;
 import co.com.pragma.model.role.Role;
@@ -10,8 +11,8 @@ import co.com.pragma.usecase.user.UserUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
-import org.springframework.util.StringUtils;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
@@ -23,40 +24,43 @@ public class AdminUserInitializer implements ApplicationListener<ApplicationRead
     private final UserRepository userRepository;
     private final UserUseCase userUseCase;
     private final AdminUserProperties adminProps;
+    private final SuperUserProperties superProps;
     private final LoggerPort logger;
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
-        createAdminUser();
+        if ( superProps != null )
+            createInitialUser(superProps.getEmail(),superProps.getPassword(), "000000", DefaultValues.SUPER_USER_ROLE_NAME);
+        if ( adminProps != null )
+            createInitialUser(adminProps.getEmail(),adminProps.getPassword(), "000001", DefaultValues.ADMIN_ROLE_NAME);
     }
 
-    private void createAdminUser() {
-        if (adminProps == null || !StringUtils.hasText(adminProps.getEmail()) || !StringUtils.hasText(adminProps.getPassword())) {
-            logger.warn("Default admin user properties (app.default-admin.email, app.default-admin.password) are not configured. Skipping admin user creation.");
+    private void createInitialUser(String email, String password, String idNumber, String roleName) {
+        if (!StringUtils.hasText(email) || !StringUtils.hasText(password)) {
+            logger.warn("Default {} properties are not configured. Skipping {} creation.", roleName, roleName);
             return;
         }
 
-        User adminExample = User.builder().email(adminProps.getEmail()).build();
+        User userExample = User.builder().email(email).build();
 
-        userRepository.findOne(adminExample)
+        userRepository.findOne(userExample)
                 .switchIfEmpty(Mono.defer(() -> {
-                    logger.info("Default admin user not found. Creating one...");
+                    logger.info("Default {} not found. Creating one...", roleName);
                     User adminToCreate = User.builder()
-                            .name("Admin")
-                            .lastName("User")
-                            .email(adminProps.getEmail())
-                            .password(adminProps.getPassword())
-                            .idNumber("00000000")
+                            .name("User")
+                            .lastName("NoLastName")
+                            .email(email)
+                            .password(password)
+                            .idNumber(idNumber)
                             .baseSalary(BigDecimal.ZERO)
-                            .role(Role.builder().name(DefaultValues.ADMIN_ROLE_NAME).build())
+                            .role(Role.builder().name(roleName).build())
                             .build();
                     return userUseCase.saveUser(adminToCreate);
                 }))
-                .doOnSuccess(user -> logger.info("Admin user check complete. Admin user ID: {}", user.getUserId()))
+                .doOnSuccess(user -> logger.info("{} user check/creation complete. User ID: {}", roleName, user.getUserId()))
                 .then()
-                .subscribe(null,
-                        error -> logger.error("Error during admin user initialization.", error),
-                        () -> logger.info("Admin user initialization process finished.")
-                );
+                .doOnError(error -> logger.error("Error during {} initialization.", roleName, error))
+                .doOnSuccess(v -> logger.info("{} initialization process finished successfully.", roleName))
+                .block();
     }
 }

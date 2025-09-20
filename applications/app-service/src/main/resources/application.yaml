@@ -7,11 +7,11 @@ spring:
   devtools:
     add-properties: false
   profiles:
-    include: null
+    active: "${SPRING_PROFILES_ACTIVE:local}"
   flyway:
     url: jdbc:mysql://${SPRING_R2DBC_HOST:localhost}:${SPRING_R2DBC_PORT:3306}/${SPRING_R2DBC_DB:auth_db}
-    user: ${SPRING_DB_USERNAME:jpriva}
-    password: ${SPRING_DB_PASSWORD:pass12345}
+    user: ${SPRING_DB_USERNAME}
+    password: ${SPRING_DB_PASSWORD}
     locations: "classpath:db/migration"
     enabled: true
   output:
@@ -23,8 +23,8 @@ adapters:
     host: ${SPRING_R2DBC_HOST:localhost}
     port: ${SPRING_R2DBC_PORT:3306}
     database: ${SPRING_R2DBC_DB:auth_db}
-    username: ${SPRING_DB_USERNAME:jpriva}
-    password: ${SPRING_DB_PASSWORD:pass12345}
+    username: ${SPRING_DB_USERNAME}
+    password: ${SPRING_DB_PASSWORD}
 
 management:
   endpoints:
@@ -39,7 +39,7 @@ management:
     port: 9090
 
 cors:
-  allowed-origins: "http://localhost:4200,http://localhost:8081"
+  allowed-origins: "${CORS_ALLOWED_ORIGINS:http://localhost:4200,http://localhost:8081}"
 
 springdoc:
   api-docs:
@@ -56,17 +56,15 @@ springdoc:
     - /api/v1/busquedas/emails
     - /api/v1/busquedas/filtro
 
-
-logging:
-  level:
-    org.springframework.transaction.reactive: DEBUG
-
 security:
   jwt:
-    secret: ${JWT_SECRET:6wmLjTUj5h4CXtp23BPjlr2IouInKGEBhqVi+LkR1KlIisuE4dKm4vbwWhUKwPsg53CjqX5Uu2L8TshpLXPdWA==}
-    expiration: 3600
+    secret: ${JWT_SECRET}
+    expiration: ${JWT_EXPIRATION:3600}
 
 app:
   default-admin:
-    email: ${APP_DEFAULT-ADMIN_EMAIL:admin@crediya.com}
-    password: ${APP_DEFAULT-ADMIN_PASSWORD:admin1234}
+    email: ${APP_DEFAULT-ADMIN_EMAIL}
+    password: ${APP_DEFAULT-ADMIN_PASSWORD}
+  default-super-user:
+    email: ${APP_DEFAULT-SUPER_EMAIL}
+    password: ${APP_DEFAULT-SUPER_PASSWORD}
