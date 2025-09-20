@@ -4,12 +4,14 @@ WORKDIR /workspace/app
 COPY build.gradle settings.gradle gradlew gradle.properties ./
 COPY gradle ./gradle
 COPY main.gradle .
-RUN ./gradlew dependencies
+RUN sed -i 's/\r$//' ./gradlew && \
+     chmod +x ./gradlew && \
+     ./gradlew dependencies
 COPY applications ./applications
 COPY domain ./domain
 COPY infrastructure ./infrastructure
 
-RUN chmod +x ./gradlew && ./gradlew build -x test
+RUN ./gradlew build -x test
 
 
 # RUNTIME STAGE -----------------------------------
