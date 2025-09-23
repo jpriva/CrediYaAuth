@@ -18,7 +18,7 @@ public class ApiConstants {
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
     public static final class ApiPaths {
-        public static final String SWAGGER_PATH = "/swagger-ui.html";
+        public static final String SWAGGER_PATH = "/auth/swagger-ui.html";
         public static final String BASE_PATH = "/api/v1";
         public static final String USERS_PATH = BASE_PATH + "/usuarios";
         public static final String SEARCHES_PATH = BASE_PATH + "/busquedas";
@@ -34,8 +34,8 @@ public class ApiConstants {
     public static final class ApiPathMatchers {
         //PERMIT ALL
         public static final String LOGIN_MATCHER = ApiPaths.LOGIN_PATH + "/**";
-        public static final String API_DOCS_MATCHER = "/v3/api-docs/**";
-        public static final String SWAGGER_UI_MATCHER = "/swagger-ui/**";
+        public static final String API_DOCS_MATCHER = "/auth/api-docs/**";
+        public static final String SWAGGER_UI_MATCHER = "/auth/swagger-ui/**";
         //ADMIN/ASESOR
         public static final String USER_MATCHER = ApiPaths.USERS_PATH + "/**";
         //ASESOR
@@ -43,8 +43,8 @@ public class ApiConstants {
         //CLIENTE
         public static final String USER_BY_EMAIL_MATCHER = ApiPaths.SEARCHES_PATH + "/email/**";
         //SUPER_USER
-        public static final String ACTUATOR_MATCHER = "/actuator/**";
-        public static final String HEALTH_CHECK_MATCHER = "/actuator/health/**";
+        public static final String ACTUATOR_MATCHER = "/auth/actuator/**";
+        public static final String HEALTH_CHECK_MATCHER = "/auth/actuator/health/**";
         //TEST ENDPOINT
         public static final String TEST_MATCHER = "/test-endpoint";
         public static final String DUMMY_USER_DOC_ROUTE = "/dummy-user-doc-route";
