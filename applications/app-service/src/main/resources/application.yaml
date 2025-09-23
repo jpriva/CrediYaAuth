@@ -29,6 +29,7 @@ adapters:
 management:
   endpoints:
     web:
+      base-path: "/auth/actuator"
       exposure:
         include: "health,prometheus"
   endpoint:
@@ -46,7 +47,7 @@ springdoc:
       version: "1.0.0"
       description: "This is the API for Crediya Auth Microservice"
   swagger-ui:
-    path: /swagger-ui.html
+    path: /auth/swagger-ui.html
     public-urls:
       - /api/v1/auth/login
   paths-to-exclude:
