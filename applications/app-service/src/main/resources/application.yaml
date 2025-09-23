@@ -46,10 +46,11 @@ springdoc:
       title: "Crediya Auth API Microservice"
       version: "1.0.0"
       description: "This is the API for Crediya Auth Microservice"
+    path: /auth/api-docs
   swagger-ui:
     path: /auth/swagger-ui.html
     public-urls:
-      - /api/v1/auth/login
+      - /api/v1/login
   paths-to-exclude:
     - /api/v1/usuarios/{idNumber}
     - /api/v1/busquedas/emails
