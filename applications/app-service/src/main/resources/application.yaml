@@ -16,7 +16,7 @@ spring:
     enabled: true
   output:
     ansi:
-      enabled: ALWAYS
+      enabled: DETECT
 
 adapters:
   r2dbc:
