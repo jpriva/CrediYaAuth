@@ -1,7 +1,6 @@
 package co.com.pragma.jwtadapter;
 
 import co.com.pragma.jwtadapter.config.JwtProperties;
-import co.com.pragma.model.exceptions.KeyException;
 import co.com.pragma.model.jwt.JwtData;
 import co.com.pragma.model.jwt.gateways.JwtProviderPort;
 import co.com.pragma.model.user.User;
@@ -41,6 +40,7 @@ public class JwtProviderAdapter implements JwtProviderPort {
         return Jwts.builder()
                 .setClaims(claims)
                 .setSubject(user.getEmail())
+                .setAudience("Crediya214214332413")
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + jwtProperties.getExpiration() * 1000))
                 .signWith(getPrivateKey(), SignatureAlgorithm.RS256)
