@@ -19,4 +19,8 @@ dependencies {
 
     //JWT
     implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+
+    implementation 'com.nimbusds:nimbus-jose-jwt:9.37.3'
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
+
 }

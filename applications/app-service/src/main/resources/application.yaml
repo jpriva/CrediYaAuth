@@ -14,9 +14,15 @@ spring:
     password: ${SPRING_DB_PASSWORD}
     locations: "classpath:db/migration"
     enabled: true
-  output:
-    ansi:
-      enabled: ALWAYS
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: ${SECURITY_PUBLIC_KEY_URI}
+
+    output:
+      ansi:
+        enabled: DETECT
 
 adapters:
   r2dbc:
@@ -58,7 +64,8 @@ springdoc:
 
 security:
   jwt:
-    secret: ${JWT_SECRET}
+    private-key: "${JWT_PRIVATE_KEY}"
+    public-key: "${JWT_PUBLIC_KEY}"
     expiration: ${JWT_EXPIRATION:3600}
 
 app:

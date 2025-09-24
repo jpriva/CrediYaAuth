@@ -35,6 +35,9 @@ public class RouterRest {
         ).andRoute(
                 GET(ApiConstants.ApiPaths.USERS_BY_FILTER_PATH),
                 handler::listenGETUsersByFilterUseCase
+        ).andRoute(
+                GET(ApiConstants.ApiPaths.JWKS_PATH),
+                handler::listenGETJWKSKey
         );
     }
 }

@@ -3,6 +3,11 @@ spring:
     url: jdbc:mysql://${SPRING_R2DBC_HOST:localhost}:${SPRING_R2DBC_PORT:3306}/${SPRING_R2DBC_DB:auth_db}
     user: ${SPRING_DB_USERNAME:jpriva}
     password: ${SPRING_DB_PASSWORD:pass12345}
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: ${SECURITY_PUBLIC_KEY_URI:http://localhost:8081/.well-known/jwks.json}
 
 adapters:
   r2dbc:
@@ -12,9 +17,52 @@ adapters:
     username: ${SPRING_DB_USERNAME:jpriva}
     password: ${SPRING_DB_PASSWORD:pass12345}
 
+logging:
+  level:
+    co.com.pragma.api.exception.handler: DEBUG
+    org.springframework.security.oauth2.jwt: DEBUG
+    org.springframework.security.oauth2.server.resource: DEBUG
+    reactor.netty.http.client: DEBUG
+
 security:
   jwt:
-    secret: ${JWT_SECRET:iBdGbA8Dxowf12Zs7IYH91+KwKOg5yb39RGQv6pOWes=}
+    private-key: "-----BEGIN PRIVATE KEY-----
+MIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDdYk0RoHnJgMqS
+5LUGPDj8wZB8hA9Iwzs1RynJBzvdDjpFoYe4YCKjtoVmJ9dYw4OuHb7UA+7nn+zt
+cEUOrBjTgUDiw6QcFPMxMwdhYd5E0rsuoJn9+8B7PTnhMxcGR3argemOzsELMusG
+iQae1rSLySm9p0RMSjJGC8eRDJHItIdGtxaq2QcyjMNaucia6NvQx5+6vAeOICdm
+VvzxszS5JlLE+jIC78OLw63zJlBld1USCYn+JR93t7Tw/0AkTpoFwOFe9Guu3o78
+Y5lr2wjp+zV0qlDVTXU4enxSVIigEJvPsLbo2DbE0i6BOoeutD0BC9O8zJzwO+OM
+g3zaBmfvAgMBAAECggEAD7l+veTHIb/rI5npHcNDTPi2uZFrwIBVgUhHuIayAtaS
+3wVFLZxueXBqc0IbMqvYe5KTTl3lJ0CdxJO34/3nWYaRxEmfK3t1dqYoPQuFjR/m
+ub4gkgDCwD4uEUfet8x1qmL04vbekVwRg4pSFRAtDMzCET2DRWPzxDPr/eqFpFrE
+e0wrJ3TzfDFIL1pbEF4yRQFcyl2nICECM316+mWUSslxLUU/oAWpYQnD6+YRFS2Z
+depRhfMd/bGC7bqRE0ax/qzWxd1ZcQ6HVwMN8TTe+1KEDFLFkNb8sp2ZgbdJQXyF
+9jRTv6ICT1GSksGi1r7PYrHS27XUbIkNq9SNR9dFYQKBgQDuxDyugqss1mF7FU78
+Cb1SqsXBCS5bGOX0PCsg0eB5IYb6PmxN7WD0GmnxG+76IRD2qjzy7NKmzspCQ1by
+RAynD0Qvz0mQqMIc8zvVH7XwvUFCiI9STNE9r5mY6ldcfeUeuhxlw34A4qIYZxfJ
+rHEpp8NP5ZlPc7QUOJZRcjPqsQKBgQDtXOGNTIZXr1VxQyH2mSFFjImbnXS77GSx
+S4P9kVs/Hon0c4CyryRfp7t3ID/qy1G17bknI4uPG6x3EJDG+5pBa3hE9o49067D
+rE1+4T7gZkdDxfL22vJe7sRk9Mled1BPdCd8NXqpFEtenzYRTgJI4sIh+c8ma5Df
+ZIXGB2LknwKBgFhttUuseVkRzOiY67fMo6GKPdNQYyq5/fCGmDJ/iHNUR3lGxTXX
+RKEjZzk07z0UIgQ46HnP2/SLgb0o03rGWSlGLirGyqgY2EuAihhUtj2C2jiZ+vqw
+GI6QCoLnx5MpzUGkDABkdrY9OWtwQw8eHose5ucgUbdrUrZqfsGLWk8BAoGALOVg
+lEVhM7yqQJ4eEnKsZGdMr+58Yf84nIBYGuIfjDTOizo9oY6XJrCnOMUU0ehbMDoi
+x1Bl2U+2s16iw8BbUPxu5zxrcy5S5Bf3IISiS/eMizkp159aMLKg2yeh3whaXGzv
++wJyjQCVsPQUWfmTXQ3nAl4p3G6EHHz7AJXtEqkCgYA8x/4chaaxita9ffFX++9r
+vEbENm2b8GUeOMXlKSynGLjdkr20jfGfYU6m60bKaQIfMcjc/h0iImmAvue9nMj1
+YaJP9/2UwN00nA+KTHDRuTUiWCMTuObxX3m9dPD1fdzga3730en30hJi0mqSoEYk
+HzaKGnNQMgKsNg2jkprTwA==
+-----END PRIVATE KEY-----"
+    public-key: "-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA3WJNEaB5yYDKkuS1Bjw4
+/MGQfIQPSMM7NUcpyQc73Q46RaGHuGAio7aFZifXWMODrh2+1APu55/s7XBFDqwY
+04FA4sOkHBTzMTMHYWHeRNK7LqCZ/fvAez054TMXBkd2q4Hpjs7BCzLrBokGnta0
+i8kpvadETEoyRgvHkQyRyLSHRrcWqtkHMozDWrnImujb0MefurwHjiAnZlb88bM0
+uSZSxPoyAu/Di8Ot8yZQZXdVEgmJ/iUfd7e08P9AJE6aBcDhXvRrrt6O/GOZa9sI
+6fs1dKpQ1U11OHp8UlSIoBCbz7C26Ng2xNIugTqHrrQ9AQvTvMyc8DvjjIN82gZn
+7wIDAQAB
+-----END PUBLIC KEY-----"
 
 app:
   default-admin:
