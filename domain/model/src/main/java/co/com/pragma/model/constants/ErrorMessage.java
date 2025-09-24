@@ -54,6 +54,9 @@ public final class ErrorMessage {
     public static final String INVALID_CREDENTIALS_CODE = "IC001";
     public static final String INVALID_CREDENTIALS = "Invalid credentials.";
 
+    public static final String INVALID_KEY_CODE = "K001";
+    public static final String INVALID_KEY = "There was an error processing the cryptographic keys.";
+
     public static final String INVALID_ENDPOINT_CODE = "IE001";
     public static final String INVALID_ENDPOINT = "Invalid endpoint.";
 

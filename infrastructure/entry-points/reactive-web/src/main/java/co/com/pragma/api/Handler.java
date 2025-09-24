@@ -4,10 +4,16 @@ import co.com.pragma.api.constants.ApiConstants;
 import co.com.pragma.api.dto.*;
 import co.com.pragma.api.mapper.FilterMapper;
 import co.com.pragma.api.mapper.UserMapper;
+import co.com.pragma.model.exceptions.KeyException;
 import co.com.pragma.model.jwt.gateways.JwtProviderPort;
+import co.com.pragma.model.logs.gateways.LoggerPort;
 import co.com.pragma.model.user.filters.UserFilter;
 import co.com.pragma.usecase.auth.AuthUseCase;
 import co.com.pragma.usecase.user.UserUseCase;
+import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.jwk.JWKSet;
+import com.nimbusds.jose.jwk.KeyUse;
+import com.nimbusds.jose.jwk.RSAKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpStatus;
@@ -18,6 +24,7 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.security.interfaces.RSAPublicKey;
 import java.time.Instant;
 import java.util.List;
 
@@ -31,6 +38,7 @@ public class Handler {
     private final AuthUseCase authUseCase;
     private final JwtProviderPort jwtProvider;
     private final UserMapper userMapper;
+    private final LoggerPort logger;
 
     public Mono<ServerResponse> listenPOSTSaveUserUseCase(ServerRequest serverRequest) {
         return serverRequest.bodyToMono(UserRequestDTO.class)
@@ -80,7 +88,8 @@ public class Handler {
 
     public Mono<ServerResponse> listenPOSTUsersByEmailsUseCase(ServerRequest serverRequest) {
         Flux<UserResponseDTO> usersFlux = serverRequest
-                .bodyToMono(new ParameterizedTypeReference<List<String>>() {})
+                .bodyToMono(new ParameterizedTypeReference<List<String>>() {
+                })
                 .flatMapMany(userUseCase::findUsersByEmails)
                 .map(userMapper::toResponseDto);
 
@@ -136,5 +145,22 @@ public class Handler {
                 .flatMap(userList -> ServerResponse.ok()
                         .contentType(MediaType.APPLICATION_JSON)
                         .bodyValue(userList));
+    }
+
+    public Mono<ServerResponse> listenGETJWKSKey(ServerRequest serverRequest) {
+        return Mono.fromCallable(() -> (RSAPublicKey) jwtProvider.getPublicKey())
+                .flatMap(publicKey -> Mono.fromCallable(() -> {
+                    logger.info("Key requested by {} with public algorithm {}", serverRequest.remoteAddress(), publicKey.getAlgorithm());
+                    RSAKey rsaJwk = new RSAKey.Builder(publicKey)
+                            .keyUse(KeyUse.SIGNATURE)
+                            .algorithm(JWSAlgorithm.RS256)
+                            .keyIDFromThumbprint()
+                            .build();
+                    return new JWKSet(rsaJwk.toPublicJWK()).toJSONObject();
+                }))
+                .flatMap(jwksMap -> ServerResponse.ok()
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .bodyValue(jwksMap))
+                .onErrorResume(KeyException.class, Mono::error);
     }
 }
