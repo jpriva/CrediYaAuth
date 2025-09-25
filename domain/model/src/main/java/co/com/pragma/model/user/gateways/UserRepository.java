@@ -21,6 +21,8 @@ public interface UserRepository {
 
     Flux<User> findAllByEmail(List<String> email);
 
+    Flux<User> findAllByRole(Integer roleId);
+
     Flux<User> findUsersByFilter(UserFilter filter);
 
     Flux<String> findUserEmailsByFilter(UserFilter filter);

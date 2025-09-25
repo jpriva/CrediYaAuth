@@ -38,6 +38,9 @@ public class RouterRest {
         ).andRoute(
                 GET(ApiConstants.ApiPaths.JWKS_PATH),
                 handler::listenGETJWKSKey
+        ).andRoute(
+                GET(ApiConstants.ApiPaths.REPORT_ADMINS_PATH),
+                handler::listenerGETSendEmailToAdmins
         );
     }
 }

@@ -30,3 +30,7 @@ include ':password'
 project(':password').projectDir = file('./infrastructure/driven-adapters/password')
 include ':jwt-adapter'
 project(':jwt-adapter').projectDir = file('./infrastructure/driven-adapters/jwt-adapter')
+include ':metrics'
+project(':metrics').projectDir = file('./infrastructure/helpers/metrics')
+include ':sqs-sender'
+project(':sqs-sender').projectDir = file('./infrastructure/driven-adapters/sqs-sender')
