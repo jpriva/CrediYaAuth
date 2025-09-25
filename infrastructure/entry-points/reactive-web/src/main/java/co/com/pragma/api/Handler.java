@@ -163,4 +163,10 @@ public class Handler {
                         .bodyValue(jwksMap))
                 .onErrorResume(KeyException.class, Mono::error);
     }
+
+    public Mono<ServerResponse> listenerGETSendEmailToAdmins(ServerRequest serverRequest) {
+        return userUseCase.sendReportToAdmins()
+                .flatMap(response -> ServerResponse.ok().bodyValue(response))
+                .onErrorResume(KeyException.class, Mono::error);
+    }
 }

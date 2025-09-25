@@ -17,6 +17,12 @@ adapters:
     username: ${SPRING_DB_USERNAME:jpriva}
     password: ${SPRING_DB_PASSWORD:pass12345}
 
+adapter:
+  sqs:
+    region: "${ADAPTERS_SQS_REGION:us-east-1}"
+    queueUrl: "${SQS_ENDPOINT_ADMIN_NOTIFICATION:http://localhost:4566/000000000000/sample}"
+    endpoint: "${SQS_URL_ADMIN_NOTIFICATION:http://localhost:4566}"
+
 logging:
   level:
     co.com.pragma.api.exception.handler: DEBUG

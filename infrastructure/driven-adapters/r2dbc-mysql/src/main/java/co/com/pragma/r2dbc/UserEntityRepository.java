@@ -15,4 +15,6 @@ public interface UserEntityRepository extends
     Flux<UserEntity> findAllByEmailIn(List<String> emails);
 
     Mono<UserEntity> findByEmail(String email);
+
+    Flux<UserEntity> findAllByRolId(Integer rolId);
 }

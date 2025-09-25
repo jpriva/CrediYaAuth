@@ -9,6 +9,8 @@ import co.com.pragma.model.exceptions.RoleNotFoundException;
 import co.com.pragma.model.exceptions.UserNullException;
 import co.com.pragma.model.logs.gateways.LoggerPort;
 import co.com.pragma.model.password.gateways.PasswordEncoderPort;
+import co.com.pragma.model.queue.gateways.SQSPort;
+import co.com.pragma.model.role.Role;
 import co.com.pragma.model.role.gateways.RoleRepository;
 import co.com.pragma.model.transaction.gateways.TransactionalPort;
 import co.com.pragma.model.user.User;
@@ -31,6 +33,7 @@ public class UserUseCase {
     private final LoggerPort logger;
     private final PasswordEncoderPort passwordEncoderPort;
     private final TransactionalPort transactionalPort;
+    private final SQSPort sqsPort;
 
     public Mono<User> saveUser(User user) {
         return Mono.justOrEmpty(user)
@@ -77,6 +80,15 @@ public class UserUseCase {
                 .flatMapMany(userRepository::findUserEmailsByFilter)
                 .doFirst(() -> logger.info(LogMessages.FINDING_USER_EMAILS))
                 .doOnError(ex -> logger.error(LogMessages.ERROR_FINDING_USER_EMAILS, ex));
+    }
+
+    public Mono<String> sendReportToAdmins(){
+        return roleRepository.findOne(Role.builder().name(DefaultValues.ADMIN_ROLE_NAME).build())
+                .flatMapMany(role->userRepository.findAllByRole(role.getRolId()))
+                .map(User::getEmail)
+                .collectList()
+                .flatMap(sqsPort::sendEmails)
+                .thenReturn("Sending emails");
     }
 
     // START Private methods ***********************************************************
