@@ -1,6 +1,9 @@
 apply plugin: 'org.springframework.boot'
 
 dependencies {
+	implementation project(':sqs-sender')
+	implementation project(':metrics')
+	implementation 'software.amazon.awssdk:sts'
 	implementation project(':jwt-adapter')
 	implementation project(':password')
 	implementation project(':reactive-web')

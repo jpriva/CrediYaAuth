@@ -60,6 +60,11 @@ public class UserEntityRepositoryAdapter implements UserRepository {
     }
 
     @Override
+    public Flux<User> findAllByRole(Integer roleId) {
+        return userRepository.findAllByRolId(roleId).map(userMapper::toDomain);
+    }
+
+    @Override
     public Flux<User> findUsersByFilter(UserFilter filter) {
         Criteria criteria = EntityUtils.buildCriteria(filter);
 

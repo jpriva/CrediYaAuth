@@ -24,6 +24,7 @@ public class ApiConstants {
         public static final String SEARCHES_PATH = BASE_PATH + "/busquedas";
         public static final String USERS_BY_FILTER_PATH = SEARCHES_PATH + "/filtro";
         public static final String LOGIN_PATH = BASE_PATH + "/login";
+        public static final String REPORT_ADMINS_PATH = BASE_PATH + "/report-admins";
         public static final String JWKS_PATH = "/.well-known/jwks.json";
         public static final String USER_BY_ID_NUMBER_PATH = USERS_PATH + "/{"+ApiParams.ID_NUMBER_PARAM+"}";
         public static final String USERS_BY_EMAIL_PATH = SEARCHES_PATH + "/emails";
@@ -39,6 +40,7 @@ public class ApiConstants {
         public static final String SWAGGER_UI_MATCHER = "/auth/swagger-ui/**";
         //ADMIN/ASESOR
         public static final String USER_MATCHER = ApiPaths.USERS_PATH + "/**";
+        public static final String REPORT_ADMINS_MATCHER = ApiPaths.REPORT_ADMINS_PATH + "/**";
         //ASESOR
         public static final String SEARCHES_MATCHER = ApiPaths.SEARCHES_PATH + "/**";
         //CLIENTE
